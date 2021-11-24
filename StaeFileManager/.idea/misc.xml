@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.24375" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/file.xml" value="0.14010416666666667" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/file_document.xml" value="0.1" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder.xml" value="0.1" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder_music.xml" value="0.1" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder_plus.xml" value="0.1" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder_refresh.xml" value="0.1" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder_remove.xml" value="0.1" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder_search.xml" value="0.1" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder_zip.xml" value="0.1" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/ic_launcher_background.xml" value="0.24375" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/zip_box.xml" value="0.13958333333333334" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/activity_file_manager.xml" value="0.264" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/activity_settings.xml" value="0.2" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/item_file_card.xml" value="0.264" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/menu/toolbar_menu.xml" value="0.264" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
