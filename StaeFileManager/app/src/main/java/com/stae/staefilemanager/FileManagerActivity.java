@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,12 +31,14 @@ import android.view.MenuItem;
 import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class FileManagerActivity extends AppCompatActivity {
     private RecyclerView fileRecyclerView;
     private ArrayList<FileItem> fileItemArray;
     private ActivityResultLauncher<String> activityResultLauncher;
+    private NestedScrollView fileScroll;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,16 +62,40 @@ public class FileManagerActivity extends AppCompatActivity {
         fileItemArray=new ArrayList<>();
         fileItemArray.add(new FileItem("file01"));
         fileItemArray.add(new FileItem("FILE02"));
+        fileItemArray=loadDirectoryContents("/sdcard/");
         fileRecyclerView=findViewById(R.id.fileRecyclerView);
         FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray);
         fileRecyclerView.setAdapter(fileItemAdapter);
         fileRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        fileRecyclerView.setNestedScrollingEnabled(false);
+        fileScroll=findViewById(R.id.fileScroll);
+        fileScroll.post(() -> fileScroll.scrollTo(0,0));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         checkWritePermission4();
+    }
+
+    private ArrayList<FileItem> loadDirectoryContents(String path)
+    {
+        File file=new File(path);
+        ArrayList<FileItem> fileItemsArray=new ArrayList<>();
+        FileItem fileItem;
+        if(file.isDirectory())
+        {
+            File[] files=file.listFiles();
+            if(files!=null)
+            {
+                for(File f:files)
+                {
+                    fileItem=new FileItem(f.getName());
+                    fileItemsArray.add(fileItem);
+                }
+            }
+        }
+        return fileItemsArray;
     }
 
     private void checkWritePermission4() {
