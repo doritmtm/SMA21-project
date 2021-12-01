@@ -3,6 +3,7 @@ package com.stae.staefilemanager.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,9 +24,11 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
     public static class ViewHolder extends RecyclerView.ViewHolder
     {
         private TextView fileNameText;
+        private ImageView iconView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             fileNameText=itemView.findViewById(R.id.fileNameText);
+            iconView=itemView.findViewById(R.id.iconView);
         }
     }
 
@@ -38,7 +41,9 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.fileNameText.setText(fileItemArray.get(position).getName());
+        FileItem fileItem=fileItemArray.get(position);
+        holder.fileNameText.setText(fileItem.getName());
+        holder.iconView.setImageDrawable(fileItem.getIcon());
     }
 
     @Override

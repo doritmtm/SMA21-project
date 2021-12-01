@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
@@ -110,6 +111,14 @@ public class FileManagerActivity extends AppCompatActivity {
                 {
                     fileItem=new FileItem(f.getName());
                     fileItemsArray.add(fileItem);
+                    if(f.isDirectory())
+                    {
+                        fileItem.setIcon(AppCompatResources.getDrawable(this,R.drawable.folder));
+                    }
+                    else
+                    {
+                        fileItem.setIcon(AppCompatResources.getDrawable(this,R.drawable.file));
+                    }
                 }
             }
         }

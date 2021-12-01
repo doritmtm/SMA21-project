@@ -17,8 +17,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:subtitle="BLAH"
-        app:title="BLA" />
+        app:title="@string/app_name" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/settingsScroll"
