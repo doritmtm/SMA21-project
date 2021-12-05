@@ -9,9 +9,12 @@ import androidx.core.content.res.ResourcesCompat;
 import com.stae.staefilemanager.AppState;
 import com.stae.staefilemanager.R;
 
+import java.net.URI;
+
 public class FileItem {
     private String name;
     private Drawable icon;
+    private URI uri;
 
     public FileItem(String name) {
         this.name = name;
@@ -37,5 +40,13 @@ public class FileItem {
 
     public void setIcon(Drawable icon) {
         this.icon = icon;
+    }
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 }

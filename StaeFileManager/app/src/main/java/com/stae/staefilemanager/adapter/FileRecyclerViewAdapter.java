@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.stae.staefilemanager.FileManagerActivity;
 import com.stae.staefilemanager.R;
 import com.stae.staefilemanager.model.FileItem;
 
@@ -16,19 +17,28 @@ import java.util.ArrayList;
 
 public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerViewAdapter.ViewHolder> {
     private ArrayList<FileItem> fileItemArray;
+    private FileManagerActivity fileManagerActivity;
 
-    public FileRecyclerViewAdapter(ArrayList<FileItem> fileItemArray) {
+    public FileRecyclerViewAdapter(ArrayList<FileItem> fileItemArray, FileManagerActivity fileManagerActivity) {
         this.fileItemArray = fileItemArray;
+        this.fileManagerActivity = fileManagerActivity;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder
+    public class ViewHolder extends RecyclerView.ViewHolder
     {
         private TextView fileNameText;
         private ImageView iconView;
+        private FileItem fileItem;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             fileNameText=itemView.findViewById(R.id.fileNameText);
             iconView=itemView.findViewById(R.id.iconView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
+                }
+            });
         }
     }
 
@@ -44,6 +54,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         FileItem fileItem=fileItemArray.get(position);
         holder.fileNameText.setText(fileItem.getName());
         holder.iconView.setImageDrawable(fileItem.getIcon());
+        holder.fileItem=fileItem;
     }
 
     @Override

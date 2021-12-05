@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
@@ -36,6 +37,7 @@ import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 
 public class FileManagerActivity extends AppCompatActivity {
@@ -44,6 +46,7 @@ public class FileManagerActivity extends AppCompatActivity {
     private ActivityResultLauncher<String> activityResultLauncher;
     private NestedScrollView fileScroll;
     private SharedPreferences pref;
+    private Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,18 +80,16 @@ public class FileManagerActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        setSupportActionBar(findViewById(R.id.toolbar));
-        fileItemArray=new ArrayList<>();
-        fileItemArray.add(new FileItem("file01"));
-        fileItemArray.add(new FileItem("FILE02"));
-        fileItemArray=loadDirectoryContents("/sdcard/");
+        toolbar=findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         fileRecyclerView=findViewById(R.id.fileRecyclerView);
-        FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray);
-        fileRecyclerView.setAdapter(fileItemAdapter);
         fileRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         fileRecyclerView.setNestedScrollingEnabled(false);
         fileScroll=findViewById(R.id.fileScroll);
         fileScroll.post(() -> fileScroll.scrollTo(0,0));
+        fileItemArray=loadDirectoryContents(URI.create("file:/sdcard/"));
+        FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
+        fileRecyclerView.setAdapter(fileItemAdapter);
     }
 
     @Override
@@ -97,9 +98,9 @@ public class FileManagerActivity extends AppCompatActivity {
         checkWritePermission();
     }
 
-    private ArrayList<FileItem> loadDirectoryContents(String path)
+    private ArrayList<FileItem> loadDirectoryContents(URI uri)
     {
-        File file=new File(path);
+        File file=new File(uri);
         ArrayList<FileItem> fileItemsArray=new ArrayList<>();
         FileItem fileItem;
         if(file.isDirectory())
@@ -110,7 +111,7 @@ public class FileManagerActivity extends AppCompatActivity {
                 for(File f:files)
                 {
                     fileItem=new FileItem(f.getName());
-                    fileItemsArray.add(fileItem);
+                    fileItem.setUri(f.toURI());
                     if(f.isDirectory())
                     {
                         fileItem.setIcon(AppCompatResources.getDrawable(this,R.drawable.folder));
@@ -119,6 +120,7 @@ public class FileManagerActivity extends AppCompatActivity {
                     {
                         fileItem.setIcon(AppCompatResources.getDrawable(this,R.drawable.file));
                     }
+                    fileItemsArray.add(fileItem);
                 }
             }
         }
@@ -162,4 +164,13 @@ public class FileManagerActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    public void loadDirectoryContentsAndUpdateUI(URI uri)
+    {
+        toolbar.setSubtitle(uri.getPath());
+        fileItemArray=loadDirectoryContents(uri);
+        FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
+        fileRecyclerView.setAdapter(fileItemAdapter);
+    }
+
 }
