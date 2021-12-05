@@ -1,11 +1,13 @@
 package com.stae.staefilemanager.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -13,6 +15,7 @@ import com.stae.staefilemanager.FileManagerActivity;
 import com.stae.staefilemanager.R;
 import com.stae.staefilemanager.model.FileItem;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerViewAdapter.ViewHolder> {
@@ -36,7 +39,20 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
+                    if(new File(fileItem.getUri()).isDirectory())
+                    {
+                        fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
+                        fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+                            @Override
+                            public void handleOnBackPressed() {
+                                if(fileItem.getParentURI()!=null)
+                                {
+                                    fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getParentURI());
+                                    remove();
+                                }
+                            }
+                        });
+                    }
                 }
             });
         }

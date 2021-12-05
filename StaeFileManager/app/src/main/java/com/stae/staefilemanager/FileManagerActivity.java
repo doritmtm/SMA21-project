@@ -112,6 +112,10 @@ public class FileManagerActivity extends AppCompatActivity {
                 {
                     fileItem=new FileItem(f.getName());
                     fileItem.setUri(f.toURI());
+                    if(f.getParentFile()!=null)
+                    {
+                        fileItem.setParentURI(f.getParentFile().toURI());
+                    }
                     if(f.isDirectory())
                     {
                         fileItem.setIcon(AppCompatResources.getDrawable(this,R.drawable.folder));

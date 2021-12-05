@@ -14,8 +14,7 @@ import java.net.URI;
 public class FileItem {
     private String name;
     private Drawable icon;
-    private URI uri;
-
+    private URI uri,parentURI;
     public FileItem(String name) {
         this.name = name;
         this.icon= AppCompatResources.getDrawable(AppState.getContext(),R.drawable.file);
@@ -48,5 +47,13 @@ public class FileItem {
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+
+    public URI getParentURI() {
+        return parentURI;
+    }
+
+    public void setParentURI(URI parentURI) {
+        this.parentURI = parentURI;
     }
 }
