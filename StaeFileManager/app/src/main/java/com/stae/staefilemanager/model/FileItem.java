@@ -17,6 +17,7 @@ public class FileItem {
     private Drawable icon;
     private URI uri,parentURI;
     private boolean checked;
+    private FileRecyclerViewAdapter.ViewHolder viewHolder;
     public FileItem(String name) {
         this.name = name;
         this.icon= AppCompatResources.getDrawable(AppState.getContext(),R.drawable.file);
@@ -67,4 +68,11 @@ public class FileItem {
         this.checked = checked;
     }
 
+    public FileRecyclerViewAdapter.ViewHolder getViewHolder() {
+        return viewHolder;
+    }
+
+    public void setViewHolder(FileRecyclerViewAdapter.ViewHolder viewHolder) {
+        this.viewHolder = viewHolder;
+    }
 }

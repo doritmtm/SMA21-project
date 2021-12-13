@@ -21,7 +21,7 @@
         app:subtitle="/sdcard/"
         app:title="@string/app_name" />
 
-    <androidx.core.widget.NestedScrollView
+    <com.stae.staefilemanager.ui.LockableNestedScrollView
         android:id="@+id/fileScroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -31,17 +31,18 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <LinearLayout
+            android:id="@+id/linear1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <androidx.recyclerview.widget.RecyclerView
+            <com.stae.staefilemanager.ui.CustomRecyclerView
                 android:id="@+id/fileRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp" />
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </com.stae.staefilemanager.ui.LockableNestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

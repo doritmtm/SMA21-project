@@ -34,10 +34,14 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.widget.LinearLayout;
 
 import com.google.common.io.Files;
 import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
+import com.stae.staefilemanager.ui.CustomRecyclerView;
+import com.stae.staefilemanager.ui.LockableNestedScrollView;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,12 +49,13 @@ import java.net.URI;
 import java.util.ArrayList;
 
 public class FileManagerActivity extends AppCompatActivity {
-    private RecyclerView fileRecyclerView;
+    private CustomRecyclerView fileRecyclerView;
     private ArrayList<FileItem> fileItemArray;
     private ActivityResultLauncher<String> activityResultLauncher;
-    private NestedScrollView fileScroll;
+    private LockableNestedScrollView fileScroll;
     private SharedPreferences pref;
     private Toolbar toolbar;
+    private LinearLayout linear1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,8 +94,10 @@ public class FileManagerActivity extends AppCompatActivity {
         fileRecyclerView=findViewById(R.id.fileRecyclerView);
         fileRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         fileRecyclerView.setNestedScrollingEnabled(false);
+        linear1=findViewById(R.id.linear1);
         fileScroll=findViewById(R.id.fileScroll);
         fileScroll.post(() -> fileScroll.scrollTo(0,0));
+        fileRecyclerView.setNestedScrollView(fileScroll);
         fileItemArray=loadDirectoryContents(URI.create("file:/sdcard/"));
         FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
@@ -100,6 +107,12 @@ public class FileManagerActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         checkWritePermission();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d("MYAPPPP","touched!!!!");
+        return super.onTouchEvent(event);
     }
 
     private ArrayList<FileItem> loadDirectoryContents(URI uri)
