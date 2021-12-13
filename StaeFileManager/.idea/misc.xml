@@ -3,7 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable-v24/check_circle.xml" value="0.1" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.24375" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/check_circle.xml" value="0.1" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/file.xml" value="0.14010416666666667" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/file_document.xml" value="0.1" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder.xml" value="0.1" />

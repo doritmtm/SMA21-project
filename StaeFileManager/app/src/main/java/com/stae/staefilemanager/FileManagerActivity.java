@@ -28,15 +28,19 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
+import android.provider.DocumentsContract;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.common.io.Files;
 import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 
@@ -108,10 +112,17 @@ public class FileManagerActivity extends AppCompatActivity {
             File[] files=file.listFiles();
             if(files!=null)
             {
+
                 for(File f:files)
                 {
                     fileItem=new FileItem(f.getName());
                     fileItem.setUri(f.toURI());
+                    /*try {
+                        Files.copy(f,f);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }*/
+
                     if(f.getParentFile()!=null)
                     {
                         fileItem.setParentURI(f.getParentFile().toURI());

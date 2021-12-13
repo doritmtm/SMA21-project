@@ -26,6 +26,15 @@
             android:layout_marginLeft="15dp"
             app:srcCompat="@drawable/folder" />
 
+        <ImageView
+            android:id="@+id/checkView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|center_vertical"
+            android:layout_marginRight="20dp"
+            android:visibility="invisible"
+            app:srcCompat="@drawable/check_circle" />
+
         <TextView
             android:id="@+id/fileNameText"
             android:layout_width="wrap_content"

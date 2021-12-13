@@ -1,6 +1,5 @@
 package com.stae.staefilemanager.adapter;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerViewAdapter.ViewHolder> {
     private ArrayList<FileItem> fileItemArray;
     private FileManagerActivity fileManagerActivity;
+    private boolean selectionMode=false;
 
     public FileRecyclerViewAdapter(ArrayList<FileItem> fileItemArray, FileManagerActivity fileManagerActivity) {
         this.fileItemArray = fileItemArray;
@@ -30,29 +30,53 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
     public class ViewHolder extends RecyclerView.ViewHolder
     {
         private TextView fileNameText;
-        private ImageView iconView;
+        private ImageView iconView,checkView;
         private FileItem fileItem;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             fileNameText=itemView.findViewById(R.id.fileNameText);
             iconView=itemView.findViewById(R.id.iconView);
+            checkView=itemView.findViewById(R.id.checkView);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(new File(fileItem.getUri()).isDirectory())
+                    if(!selectionMode)
                     {
-                        fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
-                        fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-                            @Override
-                            public void handleOnBackPressed() {
-                                if(fileItem.getParentURI()!=null)
-                                {
-                                    fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getParentURI());
-                                    remove();
+                        if (new File(fileItem.getUri()).isDirectory()) {
+                            fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
+                            fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+                                @Override
+                                public void handleOnBackPressed() {
+                                    if (fileItem.getParentURI() != null) {
+                                        fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getParentURI());
+                                        remove();
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
+                    else
+                    {
+                        if(fileItem.isChecked())
+                        {
+                            fileItem.setChecked(false);
+                            checkView.setVisibility(View.INVISIBLE);
+                        }
+                        else
+                        {
+                            fileItem.setChecked(true);
+                            checkView.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }
+            });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    fileItem.setChecked(true);
+                    checkView.setVisibility(View.VISIBLE);
+                    selectionMode=true;
+                    return true;
                 }
             });
         }
