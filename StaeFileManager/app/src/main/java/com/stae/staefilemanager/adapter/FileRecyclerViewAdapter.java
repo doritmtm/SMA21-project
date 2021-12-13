@@ -29,14 +29,12 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
     private boolean selectionMode=false;
     private LockableNestedScrollView fileScroll; //from FileManagerActivity
     private CustomRecyclerView fileRecyclerView; //from FileManagerActivity
-    private LinearLayout linear1; //from FileManagerActivity
 
     public FileRecyclerViewAdapter(ArrayList<FileItem> fileItemArray, FileManagerActivity fileManagerActivity) {
         this.fileItemArray = fileItemArray;
         this.fileManagerActivity = fileManagerActivity;
         fileScroll=fileManagerActivity.findViewById(R.id.fileScroll);
         fileRecyclerView=fileManagerActivity.findViewById(R.id.fileRecyclerView);
-        linear1=fileManagerActivity.findViewById(R.id.linear1);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder
@@ -80,19 +78,13 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                     {
                         changeSelection();
                     }
-                    Log.d("MYAPPP","Long click!!!!");
                     selectionMode=true;
-                    activateHover();
                     fileScroll.setLocked(true);
                     fileRecyclerView.setSelectionMode(true);
                     fileRecyclerView.setCurrentChildInFocus(itemView);
-                    linear1.setNestedScrollingEnabled(false);
-                    fileScroll.setNestedScrollingEnabled(false);
-                    fileRecyclerView.setNestedScrollingEnabled(false);
                     fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
                         @Override
                         public void handleOnBackPressed() {
-                            //disableHover();
                             uncheckEveryone();
                             fileScroll.setLocked(false);
                             fileRecyclerView.setSelectionMode(false);
@@ -139,29 +131,6 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
     @Override
     public int getItemCount() {
         return fileItemArray.size();
-    }
-
-    private void activateHover()
-    {
-        for(FileItem fi:fileItemArray)
-        {
-            fi.getViewHolder().itemView.setOnHoverListener(new View.OnHoverListener() {
-                @Override
-                public boolean onHover(View v, MotionEvent event) {
-                    Log.d("MYAPPP","Hovered!");
-                    fi.getViewHolder().changeSelection();
-                    return false;
-                }
-            });
-        }
-    }
-
-    private void disableHover()
-    {
-        for(FileItem fi:fileItemArray)
-        {
-            fi.getViewHolder().itemView.setOnHoverListener(null);
-        }
     }
 
     private void checkEveryone()

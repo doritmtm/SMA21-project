@@ -27,26 +27,7 @@ public class CustomRecyclerView extends RecyclerView {
     }
 
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        Log.d("MYAPPP","Intercept touched!!!!!!");
-        /*if(selectionMode)
-        {
-            View child=findChildHovered(ev);
-            if(currentChildInFocus!=child)
-            {
-                if(child!=null)
-                {
-                    currentChildInFocus=child;
-                    child.performClick();
-                }
-            }
-        }*/
-        return super.onInterceptTouchEvent(ev);
-    }
-
-    @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        Log.d("MYAPPP","touched!!!!!!:"+ev.getX()+" "+ev.getY());
         if(selectionMode)
         {
             scrollIfUpOrDown(ev);
@@ -114,13 +95,10 @@ public class CustomRecyclerView extends RecyclerView {
         if(-200<=coordY && coordY<=50)
         {
             nestedScrollView.scrollBy(0,-20);
-            Log.d("MYAPPP","scrollBy(0,-10);");
         }
         if(nestedScrollView.getHeight()-100<=coordY && coordY<=nestedScrollView.getHeight())
         {
             nestedScrollView.scrollBy(0,20);
-            Log.d("MYAPPP","scrollBy(0,10);");
         }
-        Log.d("MYAPPP","Height:"+nestedScrollView.getHeight()+"Top:"+nestedScrollView.getTop());
     }
 }
