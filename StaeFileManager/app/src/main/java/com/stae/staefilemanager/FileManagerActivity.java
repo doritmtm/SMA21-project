@@ -1,50 +1,34 @@
 package com.stae.staefilemanager;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
-import android.app.Application;
-import android.app.DownloadManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Parcelable;
-import android.provider.DocumentsContract;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.widget.LinearLayout;
 
-import com.google.common.io.Files;
 import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
 import com.stae.staefilemanager.ui.CustomRecyclerView;
 import com.stae.staefilemanager.ui.LockableNestedScrollView;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 
@@ -56,6 +40,39 @@ public class FileManagerActivity extends AppCompatActivity {
     private SharedPreferences pref;
     private Toolbar toolbar;
     private LinearLayout linear1;
+
+    public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
+    {
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch(item.getItemId())
+            {
+                case R.id.toolbarSettings:
+                    Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
+                    startActivity(intent);
+                    break;
+            }
+            return true;
+        }
+    }
+
+    public class ToolbarSelectionMenuListener implements Toolbar.OnMenuItemClickListener
+    {
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch(item.getItemId())
+            {
+                case R.id.toolbarSettings2:
+                    Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
+                    startActivity(intent);
+                    break;
+            }
+            return true;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

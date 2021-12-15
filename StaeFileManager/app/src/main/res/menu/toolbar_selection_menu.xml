@@ -3,15 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:icon="@drawable/file"
-        android:title="Item"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/toolbarPaste"
-        android:title="@android:string/paste"
+        android:id="@+id/toolbarCopy2"
+        android:title="@android:string/copy"
         app:showAsAction="never" />
     <item
-        android:id="@+id/toolbarSettings"
+        android:id="@+id/toolbarCut2"
+        android:title="@android:string/cut"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/toolbarSettings2"
         android:title="Settings"
         app:showAsAction="never" />
 </menu>

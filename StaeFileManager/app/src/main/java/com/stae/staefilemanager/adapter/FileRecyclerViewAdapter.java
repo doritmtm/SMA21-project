@@ -83,6 +83,9 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                         nrSelected=0;
                         changeSelection();
                         toolbar.setTitle(nrSelected+" items selected");
+                        toolbar.getMenu().clear();
+                        toolbar.inflateMenu(R.menu.toolbar_selection_menu);
+                        toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarSelectionMenuListener());
                         fileScroll.setLocked(true);
                         fileRecyclerView.setSelectionMode(true);
                         fileRecyclerView.setCurrentChildInFocus(itemView);
@@ -94,6 +97,9 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                                 fileRecyclerView.setSelectionMode(false);
                                 selectionMode = false;
                                 toolbar.setTitle(R.string.app_name);
+                                toolbar.getMenu().clear();
+                                toolbar.inflateMenu(R.menu.toolbar_menu);
+                                toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarMenuListener());
                                 remove();
                             }
                         });
