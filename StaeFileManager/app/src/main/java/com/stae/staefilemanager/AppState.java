@@ -8,6 +8,7 @@ public class AppState {
     private static AppState singleton;
     private static Context context;
     private SharedPreferences preferences;
+    private FileManagerActivity fileManagerActivity;
     public AppState()
     {
         preferences=context.getSharedPreferences("StaeFileManagerPref",Context.MODE_PRIVATE);
@@ -35,5 +36,13 @@ public class AppState {
 
     public static void setContext(Context context) {
         AppState.context = context;
+    }
+
+    public FileManagerActivity getFileManagerActivity() {
+        return fileManagerActivity;
+    }
+
+    public void setFileManagerActivity(FileManagerActivity fileManagerActivity) {
+        this.fileManagerActivity = fileManagerActivity;
     }
 }

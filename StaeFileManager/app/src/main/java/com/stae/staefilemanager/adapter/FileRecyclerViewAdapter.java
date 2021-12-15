@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,12 +30,15 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
     private boolean selectionMode=false;
     private LockableNestedScrollView fileScroll; //from FileManagerActivity
     private CustomRecyclerView fileRecyclerView; //from FileManagerActivity
+    private int nrSelected=0;
+    private Toolbar toolbar;
 
     public FileRecyclerViewAdapter(ArrayList<FileItem> fileItemArray, FileManagerActivity fileManagerActivity) {
         this.fileItemArray = fileItemArray;
         this.fileManagerActivity = fileManagerActivity;
         fileScroll=fileManagerActivity.findViewById(R.id.fileScroll);
         fileRecyclerView=fileManagerActivity.findViewById(R.id.fileRecyclerView);
+        toolbar=fileManagerActivity.findViewById(R.id.toolbar);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder
@@ -74,24 +78,26 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if(!fileRecyclerView.isSelectionMode())
-                    {
+                    if(!selectionMode) {
+                        selectionMode = true;
+                        nrSelected=0;
                         changeSelection();
+                        toolbar.setTitle(nrSelected+" items selected");
+                        fileScroll.setLocked(true);
+                        fileRecyclerView.setSelectionMode(true);
+                        fileRecyclerView.setCurrentChildInFocus(itemView);
+                        fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+                            @Override
+                            public void handleOnBackPressed() {
+                                uncheckEveryone();
+                                fileScroll.setLocked(false);
+                                fileRecyclerView.setSelectionMode(false);
+                                selectionMode = false;
+                                toolbar.setTitle(R.string.app_name);
+                                remove();
+                            }
+                        });
                     }
-                    selectionMode=true;
-                    fileScroll.setLocked(true);
-                    fileRecyclerView.setSelectionMode(true);
-                    fileRecyclerView.setCurrentChildInFocus(itemView);
-                    fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-                        @Override
-                        public void handleOnBackPressed() {
-                            uncheckEveryone();
-                            fileScroll.setLocked(false);
-                            fileRecyclerView.setSelectionMode(false);
-                            selectionMode=false;
-                            remove();
-                        }
-                    });
                     return true;
                 }
             });
@@ -103,12 +109,15 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
             {
                 fileItem.setChecked(false);
                 checkView.setVisibility(View.INVISIBLE);
+                nrSelected--;
             }
             else
             {
                 fileItem.setChecked(true);
                 checkView.setVisibility(View.VISIBLE);
+                nrSelected++;
             }
+            toolbar.setTitle(nrSelected+" items selected");
         }
     }
 
@@ -149,6 +158,8 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
             fi.getViewHolder().fileItem.setChecked(false);
             fi.getViewHolder().checkView.setVisibility(View.INVISIBLE);
         }
+        nrSelected=0;
+        toolbar.setTitle(nrSelected+" items selected");
     }
 
 }

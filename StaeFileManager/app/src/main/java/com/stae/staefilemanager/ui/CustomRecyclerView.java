@@ -10,10 +10,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.stae.staefilemanager.thread.ScrollThread;
+
 public class CustomRecyclerView extends RecyclerView {
     private boolean selectionMode=false;
     private View currentChildInFocus;
     private LockableNestedScrollView nestedScrollView;
+    private ScrollThread scrollThread;
     public CustomRecyclerView(@NonNull Context context) {
         super(context);
     }
@@ -44,6 +47,7 @@ public class CustomRecyclerView extends RecyclerView {
         if(ev.getAction()==MotionEvent.ACTION_UP)
         {
             currentChildInFocus=null;
+            scrollThread.shouldStop();
         }
         return super.onTouchEvent(ev);
     }
@@ -70,6 +74,10 @@ public class CustomRecyclerView extends RecyclerView {
 
     public void setNestedScrollView(LockableNestedScrollView nestedScrollView) {
         this.nestedScrollView = nestedScrollView;
+        if(scrollThread==null)
+        {
+            scrollThread=new ScrollThread(nestedScrollView);
+        }
     }
 
     private View findChildHovered(MotionEvent ev)
@@ -94,11 +102,33 @@ public class CustomRecyclerView extends RecyclerView {
         int coordY=Math.round(ev.getY()-nestedScrollView.getScrollY());
         if(-200<=coordY && coordY<=50)
         {
-            nestedScrollView.scrollBy(0,-20);
+            startScrollThread();
+            scrollThread.setScrollByY(-25);
+            //nestedScrollView.scrollBy(0,-20);
         }
-        if(nestedScrollView.getHeight()-100<=coordY && coordY<=nestedScrollView.getHeight())
+        else if(nestedScrollView.getHeight()-100<=coordY && coordY<=nestedScrollView.getHeight())
         {
-            nestedScrollView.scrollBy(0,20);
+            startScrollThread();
+            scrollThread.setScrollByY(25);
+            //nestedScrollView.scrollBy(0,20);
+        }
+        else
+        {
+            scrollThread.setScrollByY(0);
+            scrollThread.shouldStop();
+        }
+    }
+
+    private void startScrollThread()
+    {
+        if(scrollThread.getState().equals(Thread.State.NEW))
+        {
+            scrollThread.start();
+        }
+        if(scrollThread.getState().equals(Thread.State.TERMINATED))
+        {
+            scrollThread=new ScrollThread(nestedScrollView);
+            scrollThread.start();
         }
     }
 }

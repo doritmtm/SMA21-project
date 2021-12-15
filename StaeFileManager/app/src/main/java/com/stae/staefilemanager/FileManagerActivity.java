@@ -61,7 +61,7 @@ public class FileManagerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file_manager);
         AppState.setContext(getApplicationContext());
-        AppState.instance();
+        AppState.instance().setFileManagerActivity(this);
         pref=AppState.instance().getPreferences();
         if(pref.getBoolean("systemNightModeChecked",true))
         {
@@ -109,12 +109,6 @@ public class FileManagerActivity extends AppCompatActivity {
         checkWritePermission();
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.d("MYAPPPP","touched!!!!");
-        return super.onTouchEvent(event);
-    }
-
     private ArrayList<FileItem> loadDirectoryContents(URI uri)
     {
         File file=new File(uri);
@@ -130,11 +124,6 @@ public class FileManagerActivity extends AppCompatActivity {
                 {
                     fileItem=new FileItem(f.getName());
                     fileItem.setUri(f.toURI());
-                    /*try {
-                        Files.copy(f,f);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }*/
 
                     if(f.getParentFile()!=null)
                     {
