@@ -11,6 +11,9 @@
         android:title="@android:string/cut"
         app:showAsAction="never" />
     <item
+        android:id="@+id/toolbarDelete2"
+        android:title="Delete" />
+    <item
         android:id="@+id/toolbarSettings2"
         android:title="Settings"
         app:showAsAction="never" />

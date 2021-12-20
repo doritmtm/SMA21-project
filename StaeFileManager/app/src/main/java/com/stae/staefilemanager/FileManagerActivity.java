@@ -34,6 +34,8 @@ import com.stae.staefilemanager.model.FileItem;
 import com.stae.staefilemanager.ui.CustomRecyclerView;
 import com.stae.staefilemanager.ui.LockableNestedScrollView;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -41,6 +43,7 @@ import java.util.ArrayList;
 
 public class FileManagerActivity extends AppCompatActivity {
     private CustomRecyclerView fileRecyclerView;
+    private FileRecyclerViewAdapter fileItemAdapter;
     private ArrayList<FileItem> fileItemArray;
     private ActivityResultLauncher<String> activityResultLauncher;
     private LockableNestedScrollView fileScroll;
@@ -49,7 +52,7 @@ public class FileManagerActivity extends AppCompatActivity {
     private LinearLayout linear1;
     private ArrayList<File> filesSelected;
     private FileOperations fileOperation;
-    private enum FileOperations{COPY,CUT};
+    private enum FileOperations{COPY,CUT,DELETE,NOOP};
     private URI currentDir;
 
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
@@ -73,7 +76,6 @@ public class FileManagerActivity extends AppCompatActivity {
                             .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    Log.d("MYAPPPP",currentDir.resolve(filenameInput.getText().toString()).toString());
                                     try {
                                         Files.touch(new File(currentDir.resolve(filenameInput.getText().toString())));
                                     } catch (IOException e) {
@@ -149,6 +151,13 @@ public class FileManagerActivity extends AppCompatActivity {
                     memorizeFilesSelected();
                     fileOperation=FileOperations.CUT;
                     break;
+                case R.id.toolbarDelete2:
+                    memorizeFilesSelected();
+                    fileOperation=FileOperations.DELETE;
+                    performFileOperation();
+                    fileOperation=FileOperations.NOOP;
+                    onBackPressed();
+                    break;
                 case R.id.toolbarSettings2:
                     Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
                     startActivity(intent);
@@ -204,7 +213,7 @@ public class FileManagerActivity extends AppCompatActivity {
         fileScroll.post(() -> fileScroll.scrollTo(0,0));
         fileRecyclerView.setNestedScrollView(fileScroll);
         fileItemArray=loadDirectoryContents(URI.create("file:/sdcard/"));
-        FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
+        fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
     }
 
@@ -307,10 +316,19 @@ public class FileManagerActivity extends AppCompatActivity {
         File currentDirFile=new File(currentDir);
         if(fileOperation==FileOperations.COPY)
         {
+            Log.d("MYAPPP","COPY");
             for(File f:filesSelected)
             {
                 try {
-                    Files.copy(f,currentDirFile);
+                    Log.d("MYAPPP",f+","+new File(currentDir.resolve(f.getName())));
+                    if(f.isDirectory())
+                    {
+                        FileUtils.copyDirectory(f,new File(currentDir.resolve(f.getName())));
+                    }
+                    else
+                    {
+                        FileUtils.copyFile(f,new File(currentDir.resolve(f.getName())));
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -318,15 +336,45 @@ public class FileManagerActivity extends AppCompatActivity {
         }
         if(fileOperation==FileOperations.CUT)
         {
+            Log.d("MYAPPP","CUT");
             for(File f:filesSelected)
             {
                 try {
-                    Files.move(f,currentDirFile);
+                    if(f.isDirectory())
+                    {
+                        FileUtils.copyDirectory(f,new File(currentDir.resolve(f.getName())));
+                        FileUtils.deleteDirectory(f);
+                    }
+                    else
+                    {
+                        FileUtils.copyFile(f,new File(currentDir.resolve(f.getName())));
+                        FileUtils.forceDelete(f);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
+        if(fileOperation==FileOperations.DELETE)
+        {
+            for(File f:filesSelected)
+            {
+                try {
+                    if(f.isDirectory())
+                    {
+                        FileUtils.deleteDirectory(f);
+                    }
+                    else
+                    {
+                        FileUtils.forceDelete(f);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        fileOperation=FileOperations.NOOP;
+        loadDirectoryContentsAndUpdateUI(currentDir);
     }
 
 }

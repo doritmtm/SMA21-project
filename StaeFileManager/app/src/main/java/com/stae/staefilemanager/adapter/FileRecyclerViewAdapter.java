@@ -92,14 +92,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                         fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
                             @Override
                             public void handleOnBackPressed() {
-                                uncheckEveryone();
-                                fileScroll.setLocked(false);
-                                fileRecyclerView.setSelectionMode(false);
-                                selectionMode = false;
-                                toolbar.setTitle(R.string.app_name);
-                                toolbar.getMenu().clear();
-                                toolbar.inflateMenu(R.menu.toolbar_menu);
-                                toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarMenuListener());
+                                stopSelectionMode();
                                 remove();
                             }
                         });
@@ -166,6 +159,18 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         }
         nrSelected=0;
         toolbar.setTitle(nrSelected+" items selected");
+    }
+
+    public void stopSelectionMode()
+    {
+        uncheckEveryone();
+        fileScroll.setLocked(false);
+        fileRecyclerView.setSelectionMode(false);
+        selectionMode = false;
+        toolbar.setTitle(R.string.app_name);
+        toolbar.getMenu().clear();
+        toolbar.inflateMenu(R.menu.toolbar_menu);
+        toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarMenuListener());
     }
 
 }
