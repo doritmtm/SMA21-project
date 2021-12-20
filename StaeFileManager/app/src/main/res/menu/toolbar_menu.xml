@@ -7,8 +7,14 @@
         android:title="Item"
         app:showAsAction="always" />
     <item
-        android:id="@+id/toolbarItem"
-        android:title="Item"
+        android:id="@+id/toolbarNewFile"
+        android:title="New File" />
+    <item
+        android:id="@+id/toolbarNewFolder"
+        android:title="New Folder" />
+    <item
+        android:id="@+id/toolbarPaste"
+        android:title="@android:string/paste"
         app:showAsAction="never" />
     <item
         android:id="@+id/toolbarSettings"

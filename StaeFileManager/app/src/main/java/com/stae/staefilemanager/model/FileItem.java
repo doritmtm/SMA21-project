@@ -8,6 +8,7 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.stae.staefilemanager.AppState;
 import com.stae.staefilemanager.R;
+import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
 
 import java.net.URI;
 
@@ -15,6 +16,8 @@ public class FileItem {
     private String name;
     private Drawable icon;
     private URI uri,parentURI;
+    private boolean checked;
+    private FileRecyclerViewAdapter.ViewHolder viewHolder;
     public FileItem(String name) {
         this.name = name;
         this.icon= AppCompatResources.getDrawable(AppState.getContext(),R.drawable.file);
@@ -55,5 +58,21 @@ public class FileItem {
 
     public void setParentURI(URI parentURI) {
         this.parentURI = parentURI;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
+    public FileRecyclerViewAdapter.ViewHolder getViewHolder() {
+        return viewHolder;
+    }
+
+    public void setViewHolder(FileRecyclerViewAdapter.ViewHolder viewHolder) {
+        this.viewHolder = viewHolder;
     }
 }
