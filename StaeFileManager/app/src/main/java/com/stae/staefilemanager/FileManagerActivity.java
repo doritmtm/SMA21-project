@@ -2,7 +2,6 @@ package com.stae.staefilemanager;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -10,6 +9,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -18,6 +18,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StatFs;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 
 import com.google.common.io.Files;
 import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
+import com.stae.staefilemanager.adapter.StorageDeviceRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
 import com.stae.staefilemanager.ui.CustomRecyclerView;
 import com.stae.staefilemanager.ui.LockableNestedScrollView;
@@ -39,6 +41,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 public class FileManagerActivity extends AppCompatActivity {
@@ -54,6 +57,8 @@ public class FileManagerActivity extends AppCompatActivity {
     private FileOperations fileOperation;
     private enum FileOperations{COPY,CUT,DELETE,NOOP};
     private URI currentDir;
+    private RecyclerView storageDeviceRecyclerView;
+    private StorageDeviceRecyclerViewAdapter storageDeviceAdapter;
 
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
     {
@@ -65,12 +70,13 @@ public class FileManagerActivity extends AppCompatActivity {
             TextView filenameText;
             View view;
             File currentDirFile=new File(currentDir);
+            EditText dialogChangePathInput;
             switch(item.getItemId())
             {
                 case R.id.toolbarNewFile:
                     view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_create,null);
-                    filenameInput=view.findViewById(R.id.dialogFilenameInput);
-                    filenameText=view.findViewById(R.id.dialogFilenameText);
+                    filenameInput=view.findViewById(R.id.dialogChangePathInput);
+                    filenameText=view.findViewById(R.id.dialogChangePathText);
                     filenameText.setText("File name:");
                     dialog=new AlertDialog.Builder(FileManagerActivity.this).setTitle("Create new file:")
                             .setPositiveButton("Create", new DialogInterface.OnClickListener() {
@@ -96,8 +102,8 @@ public class FileManagerActivity extends AppCompatActivity {
                     break;
                 case R.id.toolbarNewFolder:
                     view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_create,null);
-                    filenameInput=view.findViewById(R.id.dialogFilenameInput);
-                    filenameText=view.findViewById(R.id.dialogFilenameText);
+                    filenameInput=view.findViewById(R.id.dialogChangePathInput);
+                    filenameText=view.findViewById(R.id.dialogChangePathText);
                     filenameText.setText("Folder name:");
                     dialog=new AlertDialog.Builder(FileManagerActivity.this).setTitle("Create new folder:")
                             .setPositiveButton("Create", new DialogInterface.OnClickListener() {
@@ -123,6 +129,38 @@ public class FileManagerActivity extends AppCompatActivity {
                             .setView(view)
                             .create();
                     dialog.show();
+                    break;
+                case R.id.toolbarChangePath:
+                    view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_change_path,null);
+                    storageDeviceRecyclerView=view.findViewById(R.id.storageDeviceRecyclerView);
+                    dialogChangePathInput=view.findViewById(R.id.dialogChangePathInput);
+                    dialogChangePathInput.setText(currentDir.toString().substring(5));
+                    dialog=new AlertDialog.Builder(FileManagerActivity.this)
+                            .setTitle("Change Current Path")
+                            .setView(view)
+                            .setPositiveButton("Change", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    try {
+                                        currentDir=new URI("file:"+dialogChangePathInput.getText().toString());
+                                        loadDirectoryContentsAndUpdateUI(currentDir);
+                                    } catch (URISyntaxException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            })
+                            .create();
+                    dialog.show();
+                    break;
+                case R.id.toolbarStorageDevices:
+
                     break;
                 case  R.id.toolbarPaste:
                     performFileOperation();
@@ -173,6 +211,12 @@ public class FileManagerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_file_manager);
         AppState.setContext(getApplicationContext());
         AppState.instance().setFileManagerActivity(this);
+        File[] files=getExternalFilesDirs(null);
+        for(File f:files)
+        {
+            Log.d("MYAPPP",f.toURI().toString());
+        }
+
         pref=AppState.instance().getPreferences();
         if(pref.getBoolean("systemNightModeChecked",true))
         {
@@ -313,14 +357,11 @@ public class FileManagerActivity extends AppCompatActivity {
 
     private void performFileOperation()
     {
-        File currentDirFile=new File(currentDir);
         if(fileOperation==FileOperations.COPY)
         {
-            Log.d("MYAPPP","COPY");
             for(File f:filesSelected)
             {
                 try {
-                    Log.d("MYAPPP",f+","+new File(currentDir.resolve(f.getName())));
                     if(f.isDirectory())
                     {
                         FileUtils.copyDirectory(f,new File(currentDir.resolve(f.getName())));
@@ -336,7 +377,6 @@ public class FileManagerActivity extends AppCompatActivity {
         }
         if(fileOperation==FileOperations.CUT)
         {
-            Log.d("MYAPPP","CUT");
             for(File f:filesSelected)
             {
                 try {

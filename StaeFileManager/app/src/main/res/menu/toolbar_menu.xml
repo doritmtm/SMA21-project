@@ -17,6 +17,13 @@
         android:title="@android:string/paste"
         app:showAsAction="never" />
     <item
+        android:id="@+id/toolbarChangePath"
+        android:title="Change Path"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/toolbarStorageDevices"
+        android:title="Storage Devices" />
+    <item
         android:id="@+id/toolbarSettings"
         android:title="Settings"
         app:showAsAction="never" />
