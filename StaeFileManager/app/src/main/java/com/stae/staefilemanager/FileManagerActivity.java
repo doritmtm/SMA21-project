@@ -33,6 +33,7 @@ import com.google.common.io.Files;
 import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
 import com.stae.staefilemanager.adapter.StorageDeviceRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
+import com.stae.staefilemanager.model.StorageDeviceItem;
 import com.stae.staefilemanager.ui.CustomRecyclerView;
 import com.stae.staefilemanager.ui.LockableNestedScrollView;
 
@@ -59,6 +60,7 @@ public class FileManagerActivity extends AppCompatActivity {
     private URI currentDir;
     private RecyclerView storageDeviceRecyclerView;
     private StorageDeviceRecyclerViewAdapter storageDeviceAdapter;
+    private ArrayList<StorageDeviceItem> storageDeviceItemArray;
 
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
     {
@@ -134,7 +136,8 @@ public class FileManagerActivity extends AppCompatActivity {
                     view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_change_path,null);
                     storageDeviceRecyclerView=view.findViewById(R.id.storageDeviceRecyclerView);
                     dialogChangePathInput=view.findViewById(R.id.dialogChangePathInput);
-                    dialogChangePathInput.setText(currentDir.toString().substring(5));
+                    dialogChangePathInput.setText(currentDir.getRawPath());
+                    populateStorageDevicesAvailable();
                     dialog=new AlertDialog.Builder(FileManagerActivity.this)
                             .setTitle("Change Current Path")
                             .setView(view)
@@ -147,7 +150,6 @@ public class FileManagerActivity extends AppCompatActivity {
                                     } catch (URISyntaxException e) {
                                         e.printStackTrace();
                                     }
-
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -211,12 +213,6 @@ public class FileManagerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_file_manager);
         AppState.setContext(getApplicationContext());
         AppState.instance().setFileManagerActivity(this);
-        File[] files=getExternalFilesDirs(null);
-        for(File f:files)
-        {
-            Log.d("MYAPPP",f.toURI().toString());
-        }
-
         pref=AppState.instance().getPreferences();
         if(pref.getBoolean("systemNightModeChecked",true))
         {
@@ -417,4 +413,60 @@ public class FileManagerActivity extends AppCompatActivity {
         loadDirectoryContentsAndUpdateUI(currentDir);
     }
 
+    private void populateStorageDevicesAvailable()
+    {
+        storageDeviceItemArray=findStorageDevicesAvailable();
+        storageDeviceAdapter=new StorageDeviceRecyclerViewAdapter(storageDeviceItemArray);
+        storageDeviceRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        storageDeviceRecyclerView.setAdapter(storageDeviceAdapter);
+    }
+
+    private ArrayList<StorageDeviceItem> findStorageDevicesAvailable()
+    {
+        ArrayList<StorageDeviceItem> sdiarray=new ArrayList<>();
+        StorageDeviceItem sdi;
+        File[] devices=getExternalFilesDirs(null);
+        int i=0;
+        for(File d:devices)
+        {
+            sdi=createStorageDeviceItem(d,i);
+            i++;
+            sdiarray.add(sdi);
+        }
+        return sdiarray;
+    }
+
+    private StorageDeviceItem createStorageDeviceItem(File d,int i)
+    {
+        StorageDeviceItem sdi=new StorageDeviceItem();
+        try {
+            sdi.setMountPath(new URI(d.toURI().toString().split("Android")[0]));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        if(i==0)
+        {
+            sdi.setIcon(AppCompatResources.getDrawable(this,R.drawable.cellphone));
+            sdi.setTitle("Internal Storage");
+        }
+        else
+        {
+            sdi.setIcon(AppCompatResources.getDrawable(this,R.drawable.sd));
+            sdi.setTitle("External Storage");
+        }
+        updateStorageDeviceItemFileSystemStatus(sdi);
+        return sdi;
+    }
+
+    public static void updateStorageDeviceItemFileSystemStatus(StorageDeviceItem sdi)
+    {
+        StatFs statFs=new StatFs(sdi.getMountPath().getRawPath());
+        sdi.setFreeBytes(statFs.getAvailableBytes());
+        sdi.setTotalBytes(statFs.getTotalBytes());
+        sdi.setUsedBytes(sdi.getTotalBytes()-sdi.getFreeBytes());
+        sdi.setFreeGB(String.format("%,.2f",(double)sdi.getFreeBytes()/1073741824.0)+" GB");
+        sdi.setTotalGB(String.format("%,.2f",(double)sdi.getTotalBytes()/1073741824.0)+" GB");
+        sdi.setUsedGB(String.format("%,.2f",(double)sdi.getUsedBytes()/1073741824.0)+" GB");
+        sdi.setPercentageUsed((int)((double)sdi.getUsedBytes()/(double)sdi.getTotalBytes()*10000));
+    }
 }
