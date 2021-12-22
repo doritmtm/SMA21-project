@@ -61,6 +61,7 @@ public class FileManagerActivity extends AppCompatActivity {
     private RecyclerView storageDeviceRecyclerView;
     private StorageDeviceRecyclerViewAdapter storageDeviceAdapter;
     private ArrayList<StorageDeviceItem> storageDeviceItemArray;
+    private AlertDialog currentDialog;
 
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
     {
@@ -100,6 +101,7 @@ public class FileManagerActivity extends AppCompatActivity {
                             })
                             .setView(view)
                             .create();
+                    currentDialog=dialog;
                     dialog.show();
                     break;
                 case R.id.toolbarNewFolder:
@@ -130,6 +132,7 @@ public class FileManagerActivity extends AppCompatActivity {
                             })
                             .setView(view)
                             .create();
+                    currentDialog=dialog;
                     dialog.show();
                     break;
                 case R.id.toolbarChangePath:
@@ -159,6 +162,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                 }
                             })
                             .create();
+                    currentDialog=dialog;
                     dialog.show();
                     break;
                 case R.id.toolbarStorageDevices:
@@ -176,6 +180,7 @@ public class FileManagerActivity extends AppCompatActivity {
                             .setView(view)
                             .create()
                             ;
+                    currentDialog=dialog;
                     dialog.show();
                     break;
                 case  R.id.toolbarPaste:
@@ -430,7 +435,7 @@ public class FileManagerActivity extends AppCompatActivity {
     private void populateStorageDevicesAvailable()
     {
         storageDeviceItemArray=findStorageDevicesAvailable();
-        storageDeviceAdapter=new StorageDeviceRecyclerViewAdapter(storageDeviceItemArray);
+        storageDeviceAdapter=new StorageDeviceRecyclerViewAdapter(storageDeviceItemArray,this);
         storageDeviceRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         storageDeviceRecyclerView.setAdapter(storageDeviceAdapter);
     }
@@ -472,6 +477,10 @@ public class FileManagerActivity extends AppCompatActivity {
         return sdi;
     }
 
+    public AlertDialog getCurrentDialog() {
+        return currentDialog;
+    }
+
     public static void updateStorageDeviceItemFileSystemStatus(StorageDeviceItem sdi)
     {
         StatFs statFs=new StatFs(sdi.getMountPath().getRawPath());
@@ -483,4 +492,6 @@ public class FileManagerActivity extends AppCompatActivity {
         sdi.setUsedGB("used\n"+String.format("%,.2f",(double)sdi.getUsedBytes()/1073741824.0)+" GB");
         sdi.setPercentageUsed((int)((double)sdi.getUsedBytes()/(double)sdi.getTotalBytes()*10000));
     }
+
+
 }

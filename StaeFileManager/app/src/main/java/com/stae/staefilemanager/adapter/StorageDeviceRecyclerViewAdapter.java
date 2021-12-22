@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.stae.staefilemanager.FileManagerActivity;
 import com.stae.staefilemanager.model.StorageDeviceItem;
 import com.stae.staefilemanager.R;
 
@@ -18,9 +19,11 @@ import java.util.ArrayList;
 
 public class StorageDeviceRecyclerViewAdapter extends RecyclerView.Adapter<StorageDeviceRecyclerViewAdapter.ViewHolder> {
     private ArrayList<StorageDeviceItem> storageDeviceItemArray;
+    private FileManagerActivity fileManagerActivity;
 
-    public StorageDeviceRecyclerViewAdapter(ArrayList<StorageDeviceItem> storageDeviceItemArray) {
+    public StorageDeviceRecyclerViewAdapter(ArrayList<StorageDeviceItem> storageDeviceItemArray, FileManagerActivity fileManagerActivity) {
         this.storageDeviceItemArray = storageDeviceItemArray;
+        this.fileManagerActivity = fileManagerActivity;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder
@@ -28,6 +31,7 @@ public class StorageDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Stora
         private ImageView icon;
         private TextView title,path,usedSpace,freeSpace,totalSpace;
         private ProgressBar usageBar;
+        private StorageDeviceItem storageDeviceItem;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -39,6 +43,13 @@ public class StorageDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Stora
             totalSpace=itemView.findViewById(R.id.storageDeviceTotalSpace);
             usageBar=itemView.findViewById(R.id.storageDeviceProgressBar);
             usageBar.setMax(10000);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    fileManagerActivity.loadDirectoryContentsAndUpdateUI(storageDeviceItem.getMountPath());
+                    fileManagerActivity.getCurrentDialog().dismiss();
+                }
+            });
         }
     }
 
@@ -52,6 +63,7 @@ public class StorageDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Stora
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         StorageDeviceItem sdi=storageDeviceItemArray.get(position);
+        holder.storageDeviceItem=sdi;
         holder.path.setText(sdi.getMountPath().toString().substring(5));
         holder.title.setText(sdi.getTitle());
         holder.icon.setImageDrawable(sdi.getIcon());
