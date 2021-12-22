@@ -162,7 +162,21 @@ public class FileManagerActivity extends AppCompatActivity {
                     dialog.show();
                     break;
                 case R.id.toolbarStorageDevices:
+                    view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_storage_devices,null);
+                    storageDeviceRecyclerView=view.findViewById(R.id.storageDeviceRecyclerView);
+                    populateStorageDevicesAvailable();
+                    dialog=new AlertDialog.Builder(FileManagerActivity.this)
+                            .setTitle("Storage Devices")
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
 
+                                }
+                            })
+                            .setView(view)
+                            .create()
+                            ;
+                    dialog.show();
                     break;
                 case  R.id.toolbarPaste:
                     performFileOperation();
@@ -464,9 +478,9 @@ public class FileManagerActivity extends AppCompatActivity {
         sdi.setFreeBytes(statFs.getAvailableBytes());
         sdi.setTotalBytes(statFs.getTotalBytes());
         sdi.setUsedBytes(sdi.getTotalBytes()-sdi.getFreeBytes());
-        sdi.setFreeGB(String.format("%,.2f",(double)sdi.getFreeBytes()/1073741824.0)+" GB");
-        sdi.setTotalGB(String.format("%,.2f",(double)sdi.getTotalBytes()/1073741824.0)+" GB");
-        sdi.setUsedGB(String.format("%,.2f",(double)sdi.getUsedBytes()/1073741824.0)+" GB");
+        sdi.setFreeGB("free\n"+String.format("%,.2f",(double)sdi.getFreeBytes()/1073741824.0)+" GB");
+        sdi.setTotalGB("total\n"+String.format("%,.2f",(double)sdi.getTotalBytes()/1073741824.0)+" GB");
+        sdi.setUsedGB("used\n"+String.format("%,.2f",(double)sdi.getUsedBytes()/1073741824.0)+" GB");
         sdi.setPercentageUsed((int)((double)sdi.getUsedBytes()/(double)sdi.getTotalBytes()*10000));
     }
 }
