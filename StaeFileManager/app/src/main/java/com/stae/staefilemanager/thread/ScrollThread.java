@@ -1,15 +1,15 @@
 package com.stae.staefilemanager.thread;
 
 import com.stae.staefilemanager.AppState;
-import com.stae.staefilemanager.ui.LockableNestedScrollView;
+import com.stae.staefilemanager.ui.CustomRecyclerView;
 
 public class ScrollThread extends Thread{
     private int scrollByY=0;
-    private LockableNestedScrollView nestedScrollView;
+    private CustomRecyclerView customRecyclerView;
     private boolean shouldStop=false;
 
-    public ScrollThread(LockableNestedScrollView nestedScrollView) {
-        this.nestedScrollView = nestedScrollView;
+    public ScrollThread(CustomRecyclerView customRecyclerView) {
+        this.customRecyclerView = customRecyclerView;
     }
 
     public int getScrollByY() {
@@ -30,7 +30,7 @@ public class ScrollThread extends Thread{
         while(!shouldStop)
         {
             AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
-                nestedScrollView.scrollBy(0, scrollByY);
+                customRecyclerView.scrollBy(0, scrollByY);
             });
             try {
                 Thread.sleep(50);

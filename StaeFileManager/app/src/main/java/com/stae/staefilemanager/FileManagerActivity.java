@@ -20,7 +20,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.StatFs;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,8 +33,8 @@ import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
 import com.stae.staefilemanager.adapter.StorageDeviceRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
 import com.stae.staefilemanager.model.StorageDeviceItem;
+import com.stae.staefilemanager.thread.DirectoryContentsLoaderThread;
 import com.stae.staefilemanager.ui.CustomRecyclerView;
-import com.stae.staefilemanager.ui.LockableNestedScrollView;
 
 import org.apache.commons.io.FileUtils;
 
@@ -44,16 +43,16 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class FileManagerActivity extends AppCompatActivity {
     private CustomRecyclerView fileRecyclerView;
     private FileRecyclerViewAdapter fileItemAdapter;
-    private ArrayList<FileItem> fileItemArray;
+    private List<FileItem> fileItemArray;
     private ActivityResultLauncher<String> activityResultLauncher;
-    private LockableNestedScrollView fileScroll;
     private SharedPreferences pref;
     private Toolbar toolbar;
-    private LinearLayout linear1;
     private ArrayList<File> filesSelected;
     private FileOperations fileOperation;
     private enum FileOperations{COPY,CUT,DELETE,NOOP};
@@ -62,6 +61,7 @@ public class FileManagerActivity extends AppCompatActivity {
     private StorageDeviceRecyclerViewAdapter storageDeviceAdapter;
     private ArrayList<StorageDeviceItem> storageDeviceItemArray;
     private AlertDialog currentDialog;
+    private DirectoryContentsLoaderThread directoryContentsThread;
 
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
     {
@@ -72,7 +72,6 @@ public class FileManagerActivity extends AppCompatActivity {
             EditText filenameInput;
             TextView filenameText;
             View view;
-            File currentDirFile=new File(currentDir);
             EditText dialogChangePathInput;
             switch(item.getItemId())
             {
@@ -139,7 +138,7 @@ public class FileManagerActivity extends AppCompatActivity {
                     view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_change_path,null);
                     storageDeviceRecyclerView=view.findViewById(R.id.storageDeviceRecyclerView);
                     dialogChangePathInput=view.findViewById(R.id.dialogChangePathInput);
-                    dialogChangePathInput.setText(currentDir.getRawPath());
+                    dialogChangePathInput.setText(currentDir.getPath());
                     populateStorageDevicesAvailable();
                     dialog=new AlertDialog.Builder(FileManagerActivity.this)
                             .setTitle("Change Current Path")
@@ -267,11 +266,7 @@ public class FileManagerActivity extends AppCompatActivity {
         fileRecyclerView=findViewById(R.id.fileRecyclerView);
         fileRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         fileRecyclerView.setNestedScrollingEnabled(false);
-        linear1=findViewById(R.id.linear1);
-        fileScroll=findViewById(R.id.fileScroll);
-        fileScroll.post(() -> fileScroll.scrollTo(0,0));
-        fileRecyclerView.setNestedScrollView(fileScroll);
-        fileItemArray=loadDirectoryContents(URI.create("file:/sdcard/"));
+        loadDirectoryContentsAndUpdateUI(URI.create(getExternalFilesDir(null).toURI().toString().split("Android")[0]));
         fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
     }
@@ -282,25 +277,38 @@ public class FileManagerActivity extends AppCompatActivity {
         checkWritePermission();
     }
 
-    private ArrayList<FileItem> loadDirectoryContents(URI uri)
+    private List<FileItem> loadDirectoryContents(URI uri)
     {
         currentDir=uri;
-        File file=new File(uri);
-        ArrayList<FileItem> fileItemsArray=new ArrayList<>();
-        FileItem fileItem;
-        if(file.isDirectory())
+        List<FileItem> fileItemsArray=new CopyOnWriteArrayList<>();
+        if(directoryContentsThread!=null)
         {
-            File[] files=file.listFiles();
-            if(files!=null)
-            {
-
-                for(File f:files)
-                {
-                    fileItem=createFileItem(f);
-                    fileItemsArray.add(fileItem);
-                }
-            }
+            while(directoryContentsThread.getState()!=Thread.State.TERMINATED);
         }
+        directoryContentsThread=new DirectoryContentsLoaderThread(uri,fileItemsArray);
+        directoryContentsThread.shouldNotUpdateUI();
+        directoryContentsThread.start();
+        return fileItemsArray;
+    }
+
+    private List<FileItem> loadDirectoryContents(URI uri,boolean updateUI)
+    {
+        currentDir=uri;
+        List<FileItem> fileItemsArray=new CopyOnWriteArrayList<>();
+        if(directoryContentsThread!=null)
+        {
+            while(directoryContentsThread.getState()!=Thread.State.TERMINATED);
+        }
+        directoryContentsThread=new DirectoryContentsLoaderThread(uri,fileItemsArray);
+        if(updateUI)
+        {
+            directoryContentsThread.shouldUpdateUI();
+        }
+        else
+        {
+            directoryContentsThread.shouldNotUpdateUI();
+        }
+        directoryContentsThread.start();
         return fileItemsArray;
     }
 
@@ -332,10 +340,22 @@ public class FileManagerActivity extends AppCompatActivity {
 
     public void loadDirectoryContentsAndUpdateUI(URI uri)
     {
-        toolbar.setSubtitle(uri.getPath());
-        fileItemArray=loadDirectoryContents(uri);
-        FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
+        fileItemArray=loadDirectoryContents(uri,true);
+    }
+
+    public void updateDirectoryContentsUI()
+    {
+        toolbar.setSubtitle(currentDir.getPath());
+        List<FileItem> fileItemsProgArray=new ArrayList<>();
+        FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemsProgArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
+        int i=0;
+        for(FileItem fi:fileItemArray)
+        {
+            fileItemsProgArray.add(fi);
+            fileItemAdapter.notifyItemInserted(i);
+            i++;
+        }
     }
 
     private void memorizeFilesSelected()
@@ -483,7 +503,7 @@ public class FileManagerActivity extends AppCompatActivity {
 
     public static void updateStorageDeviceItemFileSystemStatus(StorageDeviceItem sdi)
     {
-        StatFs statFs=new StatFs(sdi.getMountPath().getRawPath());
+        StatFs statFs=new StatFs(sdi.getMountPath().getPath());
         sdi.setFreeBytes(statFs.getAvailableBytes());
         sdi.setTotalBytes(statFs.getTotalBytes());
         sdi.setUsedBytes(sdi.getTotalBytes()-sdi.getFreeBytes());

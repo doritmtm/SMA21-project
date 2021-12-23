@@ -1,42 +1,35 @@
 package com.stae.staefilemanager.adapter;
 
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.stae.staefilemanager.FileManagerActivity;
 import com.stae.staefilemanager.R;
 import com.stae.staefilemanager.model.FileItem;
 import com.stae.staefilemanager.ui.CustomRecyclerView;
-import com.stae.staefilemanager.ui.LockableNestedScrollView;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 
 public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerViewAdapter.ViewHolder> {
-    private ArrayList<FileItem> fileItemArray;
+    private List<FileItem> fileItemArray;
     private FileManagerActivity fileManagerActivity;
     private boolean selectionMode=false;
-    private LockableNestedScrollView fileScroll; //from FileManagerActivity
     private CustomRecyclerView fileRecyclerView; //from FileManagerActivity
     private int nrSelected=0;
     private Toolbar toolbar;
 
-    public FileRecyclerViewAdapter(ArrayList<FileItem> fileItemArray, FileManagerActivity fileManagerActivity) {
+    public FileRecyclerViewAdapter(List<FileItem> fileItemArray, FileManagerActivity fileManagerActivity) {
         this.fileItemArray = fileItemArray;
         this.fileManagerActivity = fileManagerActivity;
-        fileScroll=fileManagerActivity.findViewById(R.id.fileScroll);
         fileRecyclerView=fileManagerActivity.findViewById(R.id.fileRecyclerView);
         toolbar=fileManagerActivity.findViewById(R.id.toolbar);
     }
@@ -86,7 +79,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                         toolbar.getMenu().clear();
                         toolbar.inflateMenu(R.menu.toolbar_selection_menu);
                         toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarSelectionMenuListener());
-                        fileScroll.setLocked(true);
+                        fileRecyclerView.setLocked(true);
                         fileRecyclerView.setSelectionMode(true);
                         fileRecyclerView.setCurrentChildInFocus(itemView);
                         fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
@@ -164,7 +157,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
     public void stopSelectionMode()
     {
         uncheckEveryone();
-        fileScroll.setLocked(false);
+        fileRecyclerView.setLocked(false);
         fileRecyclerView.setSelectionMode(false);
         selectionMode = false;
         toolbar.setTitle(R.string.app_name);
