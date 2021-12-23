@@ -1,5 +1,6 @@
 package com.stae.staefilemanager;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
@@ -62,6 +63,7 @@ public class FileManagerActivity extends AppCompatActivity {
     private ArrayList<StorageDeviceItem> storageDeviceItemArray;
     private AlertDialog currentDialog;
     private DirectoryContentsLoaderThread directoryContentsThread;
+    private List<OnBackPressedCallback> backCallbacks=new ArrayList<>();
 
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
     {
@@ -149,6 +151,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                     try {
                                         currentDir=new URI("file:"+dialogChangePathInput.getText().toString());
                                         loadDirectoryContentsAndUpdateUI(currentDir);
+                                        removeAllBackCallbacks();
                                     } catch (URISyntaxException e) {
                                         e.printStackTrace();
                                     }
@@ -201,6 +204,9 @@ public class FileManagerActivity extends AppCompatActivity {
         public boolean onMenuItemClick(MenuItem item) {
             switch(item.getItemId())
             {
+                case R.id.toolbarSelectAll:
+                    fileItemAdapter.checkEveryone();
+                    break;
                 case R.id.toolbarCopy2:
                     memorizeFilesSelected();
                     fileOperation=FileOperations.COPY;
@@ -266,7 +272,9 @@ public class FileManagerActivity extends AppCompatActivity {
         fileRecyclerView=findViewById(R.id.fileRecyclerView);
         fileRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         fileRecyclerView.setNestedScrollingEnabled(false);
-        loadDirectoryContentsAndUpdateUI(URI.create(getExternalFilesDir(null).toURI().toString().split("Android")[0]));
+        String firstStorageDevicePath=getExternalFilesDir(null).toURI().getPath().split("Android")[0];
+        toolbar.setSubtitle(firstStorageDevicePath);
+        loadDirectoryContentsAndUpdateUI(URI.create("file:"+firstStorageDevicePath));
         fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
     }
@@ -346,16 +354,8 @@ public class FileManagerActivity extends AppCompatActivity {
     public void updateDirectoryContentsUI()
     {
         toolbar.setSubtitle(currentDir.getPath());
-        List<FileItem> fileItemsProgArray=new ArrayList<>();
-        FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemsProgArray,this);
+        fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
-        int i=0;
-        for(FileItem fi:fileItemArray)
-        {
-            fileItemsProgArray.add(fi);
-            fileItemAdapter.notifyItemInserted(i);
-            i++;
-        }
     }
 
     private void memorizeFilesSelected()
@@ -513,5 +513,21 @@ public class FileManagerActivity extends AppCompatActivity {
         sdi.setPercentageUsed((int)((double)sdi.getUsedBytes()/(double)sdi.getTotalBytes()*10000));
     }
 
+    public void addBackCallback(OnBackPressedCallback callback)
+    {
+        backCallbacks.add(callback);
+        getOnBackPressedDispatcher().addCallback(callback);
+    }
 
+    public void removeAllBackCallbacks()
+    {
+        for(OnBackPressedCallback b:backCallbacks)
+        {
+            if(b!=null)
+            {
+                b.remove();
+            }
+        }
+        backCallbacks=new ArrayList<>();
+    }
 }

@@ -47,6 +47,7 @@ public class StorageDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Stora
                 @Override
                 public void onClick(View v) {
                     fileManagerActivity.loadDirectoryContentsAndUpdateUI(storageDeviceItem.getMountPath());
+                    fileManagerActivity.removeAllBackCallbacks();
                     fileManagerActivity.getCurrentDialog().dismiss();
                 }
             });

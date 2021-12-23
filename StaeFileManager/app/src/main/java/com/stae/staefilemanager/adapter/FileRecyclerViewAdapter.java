@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.stae.staefilemanager.AppState;
 import com.stae.staefilemanager.FileManagerActivity;
 import com.stae.staefilemanager.R;
 import com.stae.staefilemanager.model.FileItem;
@@ -24,7 +25,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
     private FileManagerActivity fileManagerActivity;
     private boolean selectionMode=false;
     private CustomRecyclerView fileRecyclerView; //from FileManagerActivity
-    private int nrSelected=0;
+    private static int nrSelected=0;
     private Toolbar toolbar;
 
     public FileRecyclerViewAdapter(List<FileItem> fileItemArray, FileManagerActivity fileManagerActivity) {
@@ -51,7 +52,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                     {
                         if (new File(fileItem.getUri()).isDirectory()) {
                             fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
-                            fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+                            fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
                                 @Override
                                 public void handleOnBackPressed() {
                                     if (fileItem.getParentURI() != null) {
@@ -127,6 +128,14 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         holder.fileNameText.setText(fileItem.getName());
         holder.iconView.setImageDrawable(fileItem.getIcon());
         holder.fileItem=fileItem;
+        if(fileItem.isChecked())
+        {
+            holder.checkView.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            holder.checkView.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
@@ -134,22 +143,33 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         return fileItemArray.size();
     }
 
-    private void checkEveryone()
+    public void checkEveryone()
     {
+        nrSelected=0;
         for(FileItem fi:fileItemArray)
         {
-            fi.getViewHolder().fileItem.setChecked(true);
-            fi.getViewHolder().checkView.setVisibility(View.VISIBLE);
+            fi.setChecked(true);
+            if(fi.getViewHolder()!=null)
+            {
+                fi.getViewHolder().checkView.setVisibility(View.VISIBLE);
+            }
+            nrSelected++;
         }
+        notifyDataSetChanged();
+        toolbar.setTitle(nrSelected+" items selected");
     }
 
-    private void uncheckEveryone()
+    public void uncheckEveryone()
     {
         for(FileItem fi:fileItemArray)
         {
-            fi.getViewHolder().fileItem.setChecked(false);
-            fi.getViewHolder().checkView.setVisibility(View.INVISIBLE);
+            fi.setChecked(false);
+            if(fi.getViewHolder()!=null)
+            {
+                fi.getViewHolder().checkView.setVisibility(View.INVISIBLE);
+            }
         }
+        notifyDataSetChanged();
         nrSelected=0;
         toolbar.setTitle(nrSelected+" items selected");
     }
