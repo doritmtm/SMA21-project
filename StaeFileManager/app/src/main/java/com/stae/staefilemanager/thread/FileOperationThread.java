@@ -22,67 +22,63 @@ public class FileOperationThread extends Thread {
     public void run() {
         super.run();
         URI currentDir=AppState.instance().getCurrentDir();
-        if(fileOperation==FileManagerActivity.FileOperations.COPY)
-        {
-            for(File f:filesSelected)
+        try {
+            if (fileOperation == FileManagerActivity.FileOperations.COPY)
             {
-                try {
-                    if(f.isDirectory())
+                for (File f : filesSelected)
+                {
+                    if (f.isDirectory())
                     {
-                        FileUtils.copyDirectory(f,new File(currentDir.resolve(f.getName())));
+                        FileUtils.copyDirectory(f, new File(currentDir.resolve(f.getName())));
                     }
                     else
                     {
-                        FileUtils.copyFile(f,new File(currentDir.resolve(f.getName())));
+                        FileUtils.copyFile(f, new File(currentDir.resolve(f.getName())));
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
-        }
-        if(fileOperation==FileManagerActivity.FileOperations.CUT)
-        {
-            for(File f:filesSelected)
+            if (fileOperation == FileManagerActivity.FileOperations.CUT)
             {
-                try {
-                    if(f.isDirectory())
+                for (File f : filesSelected)
+                {
+                    if (f.isDirectory())
                     {
-                        FileUtils.copyDirectory(f,new File(currentDir.resolve(f.getName())));
+                        FileUtils.copyDirectory(f, new File(currentDir.resolve(f.getName())));
                         FileUtils.deleteDirectory(f);
                     }
                     else
                     {
-                        FileUtils.copyFile(f,new File(currentDir.resolve(f.getName())));
+                        FileUtils.copyFile(f, new File(currentDir.resolve(f.getName())));
                         FileUtils.forceDelete(f);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
-        }
-        if(fileOperation==FileManagerActivity.FileOperations.DELETE)
-        {
-            for(File f:filesSelected)
+            if (fileOperation == FileManagerActivity.FileOperations.DELETE)
             {
-                try {
-                    if(f.isDirectory())
-                    {
-                        FileUtils.deleteDirectory(f);
-                    }
-                    else
-                    {
-                        FileUtils.forceDelete(f);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        fileOperation=FileManagerActivity.FileOperations.NOOP;
-        AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
-            AppState.instance().getFileManagerActivity().loadDirectoryContentsAndUpdateUI(currentDir);
-        });
+                for (File f : filesSelected)
+                {
+                    if (f.isDirectory()) {
 
+                        FileUtils.deleteDirectory(f);
+                    }
+                    else
+                    {
+                        FileUtils.forceDelete(f);
+                    }
+                }
+            }
+            fileOperation=FileManagerActivity.FileOperations.NOOP;
+            AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
+                AppState.instance().getFileManagerActivity().loadDirectoryContentsAndUpdateUI(currentDir);
+            });
+        }
+        catch(IOException e)
+        {
+            AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
+                AppState.instance().getFileManagerActivity().showErrorDialog(e.getMessage());
+            });
+            e.printStackTrace();
+        }
     }
 
     public FileManagerActivity.FileOperations getFileOperation() {

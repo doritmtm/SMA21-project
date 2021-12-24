@@ -93,11 +93,12 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        Files.touch(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        FileUtils.touch(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
+                                        showErrorDialog(e.getMessage());
                                         e.printStackTrace();
                                     }
-                                    loadDirectoryContentsAndUpdateUI(currentDir);
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -121,14 +122,12 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        if(!new File(currentDir.resolve(filenameInput.getText().toString())).mkdir())
-                                        {
-                                            throw new IOException();
-                                        }
+                                        FileUtils.forceMkdir(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
+                                        showErrorDialog(e.getMessage());
                                         e.printStackTrace();
                                     }
-                                    loadDirectoryContentsAndUpdateUI(currentDir);
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -513,4 +512,20 @@ public class FileManagerActivity extends AppCompatActivity {
         }
         backCallbacks=new ArrayList<>();
     }
+
+    public void showErrorDialog(String errorMessage)
+    {
+        AlertDialog dialog=new AlertDialog.Builder(this)
+                .setTitle("Error")
+                .setMessage(errorMessage)
+                .setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .create();
+        dialog.show();
+    }
+
 }

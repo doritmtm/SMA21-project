@@ -72,7 +72,6 @@ public class StorageDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Stora
         holder.totalSpace.setText(sdi.getTotalGB());
         holder.usedSpace.setText(sdi.getUsedGB());
         holder.usageBar.setProgress(sdi.getPercentageUsed());
-        Log.d("MYAPPPP","percentage:"+sdi.getPercentageUsed());
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.stae.staefilemanager.thread;
 
+import android.util.Log;
+
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.stae.staefilemanager.AppState;
@@ -26,20 +28,35 @@ public class DirectoryContentsLoaderThread extends Thread {
         super.run();
         File file=new File(uri);
         FileItem fileItem;
-        if(file.isDirectory())
+        if(file.canRead())
         {
-            File[] files=file.listFiles();
-            if(files!=null)
+            if (file.isDirectory())
             {
-
-                for(File f:files)
+                File[] files = file.listFiles();
+                if (files != null)
                 {
-                    fileItem=createFileItem(f);
-                    fileItemsArray.add(fileItem);
+
+                    for (File f : files)
+                    {
+                        fileItem = createFileItem(f);
+                        fileItemsArray.add(fileItem);
+                    }
+                }
+                else
+                {
+                    AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
+                        AppState.instance().getFileManagerActivity().showErrorDialog("Error opening path");
+                    });
                 }
             }
         }
-        if(shouldUpdateUI)
+        else
+        {
+            AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
+                AppState.instance().getFileManagerActivity().showErrorDialog("Error opening path: Can not read current directory");
+            });
+        }
+        if (shouldUpdateUI)
         {
             AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
                 AppState.instance().getFileManagerActivity().updateDirectoryContentsUI();
