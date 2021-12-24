@@ -207,6 +207,7 @@ public class FileManagerActivity extends AppCompatActivity {
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
+            AlertDialog dialog;
             switch(item.getItemId())
             {
                 case R.id.toolbarSelectAll:
@@ -222,10 +223,35 @@ public class FileManagerActivity extends AppCompatActivity {
                     break;
                 case R.id.toolbarDelete2:
                     memorizeFilesSelected();
-                    fileOperation=FileOperations.DELETE;
-                    performFileOperation();
-                    fileOperation=FileOperations.NOOP;
-                    onBackPressed();
+                    String items;
+                    if(filesSelected.size()==1)
+                    {
+                        items="item";
+                    }
+                    else
+                    {
+                        items="items";
+                    }
+                    dialog=new AlertDialog.Builder(FileManagerActivity.this)
+                            .setTitle("Confirm Delete")
+                            .setMessage("Are you sure you want to delete "+filesSelected.size()+" "+items+"?")
+                            .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    fileOperation=FileOperations.DELETE;
+                                    performFileOperation();
+                                    fileOperation=FileOperations.NOOP;
+                                    onBackPressed();
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            })
+                            .create();
+                    dialog.show();
                     break;
                 case R.id.toolbarSettings2:
                     Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
