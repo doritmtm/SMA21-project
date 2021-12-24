@@ -3,6 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/toolbarSelectAll"
+        android:title="@android:string/selectAll"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/toolbarCopy2"
         android:title="@android:string/copy"
         app:showAsAction="never" />

@@ -5,7 +5,12 @@
       <map>
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable-v24/check_circle.xml" value="0.1" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.24375" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/cellphone.xml" value="0.14375" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/check_circle.xml" value="0.1" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/close.xml" value="0.12395833333333334" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/close_circle.xml" value="0.12395833333333334" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/close_circle_outline.xml" value="0.12395833333333334" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/close_thick.xml" value="0.12395833333333334" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/file.xml" value="0.14010416666666667" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/file_document.xml" value="0.1" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder.xml" value="0.1" />
@@ -16,11 +21,15 @@
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder_search.xml" value="0.1" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/folder_zip.xml" value="0.1" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/ic_launcher_background.xml" value="0.24375" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/sd.xml" value="0.14375" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/drawable/zip_box.xml" value="0.13958333333333334" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/activity_file_manager.xml" value="0.264" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/activity_settings.xml" value="0.264" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/dialog_change_path.xml" value="0.3190104166666667" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/dialog_create.xml" value="0.264" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/dialog_storage_devices.xml" value="0.1" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/item_file_card.xml" value="0.264" />
+        <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/layout/item_storage_device.xml" value="0.3190104166666667" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/menu/toolbar_menu.xml" value="0.264" />
         <entry key="..\:/Teme/SMA/SMA21-project/StaeFileManager/app/src/main/res/menu/toolbar_selection_menu.xml" value="0.264" />
       </map>

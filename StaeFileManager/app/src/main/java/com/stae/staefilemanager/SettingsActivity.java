@@ -21,7 +21,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        setSupportActionBar(findViewById(R.id.toolbar2));
+        //setSupportActionBar(findViewById(R.id.toolbar2));
         pref=AppState.instance().getPreferences();
         nightSwitch=findViewById(R.id.nightSwitch);
         systemNightSwitch=findViewById(R.id.systemNightSwitch);

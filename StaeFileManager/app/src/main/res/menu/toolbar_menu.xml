@@ -3,9 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:icon="@drawable/file"
-        android:title="Item"
-        app:showAsAction="always" />
+        android:id="@+id/toolbarClose"
+        android:icon="@drawable/close"
+        android:title="Close"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/toolbarNewFile"
         android:title="New File" />
@@ -16,6 +17,13 @@
         android:id="@+id/toolbarPaste"
         android:title="@android:string/paste"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/toolbarChangePath"
+        android:title="Change Path"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/toolbarStorageDevices"
+        android:title="Storage Devices" />
     <item
         android:id="@+id/toolbarSettings"
         android:title="Settings"

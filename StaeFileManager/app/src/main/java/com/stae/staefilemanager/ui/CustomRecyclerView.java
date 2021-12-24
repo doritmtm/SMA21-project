@@ -14,9 +14,9 @@ import com.stae.staefilemanager.thread.ScrollThread;
 
 public class CustomRecyclerView extends RecyclerView {
     private boolean selectionMode=false;
+    private boolean locked=false;
     private View currentChildInFocus;
-    private LockableNestedScrollView nestedScrollView;
-    private ScrollThread scrollThread;
+    private ScrollThread scrollThread=new ScrollThread(this);
     public CustomRecyclerView(@NonNull Context context) {
         super(context);
     }
@@ -27,6 +27,18 @@ public class CustomRecyclerView extends RecyclerView {
 
     public CustomRecyclerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if(locked)
+        {
+            return true;
+        }
+        else
+        {
+            return super.onInterceptTouchEvent(ev);
+        }
     }
 
     @Override
@@ -49,7 +61,14 @@ public class CustomRecyclerView extends RecyclerView {
             currentChildInFocus=null;
             scrollThread.shouldStop();
         }
-        return super.onTouchEvent(ev);
+        if(locked)
+        {
+            return true;
+        }
+        else
+        {
+            return super.onTouchEvent(ev);
+        }
     }
 
     public boolean isSelectionMode() {
@@ -66,18 +85,6 @@ public class CustomRecyclerView extends RecyclerView {
 
     public void setCurrentChildInFocus(View currentChildInFocus) {
         this.currentChildInFocus = currentChildInFocus;
-    }
-
-    public LockableNestedScrollView getNestedScrollView() {
-        return nestedScrollView;
-    }
-
-    public void setNestedScrollView(LockableNestedScrollView nestedScrollView) {
-        this.nestedScrollView = nestedScrollView;
-        if(scrollThread==null)
-        {
-            scrollThread=new ScrollThread(nestedScrollView);
-        }
     }
 
     private View findChildHovered(MotionEvent ev)
@@ -99,18 +106,16 @@ public class CustomRecyclerView extends RecyclerView {
 
     private void scrollIfUpOrDown(MotionEvent ev)
     {
-        int coordY=Math.round(ev.getY()-nestedScrollView.getScrollY());
+        int coordY=Math.round(ev.getY()-getScrollY());
         if(-200<=coordY && coordY<=50)
         {
             startScrollThread();
             scrollThread.setScrollByY(-25);
-            //nestedScrollView.scrollBy(0,-20);
         }
-        else if(nestedScrollView.getHeight()-100<=coordY && coordY<=nestedScrollView.getHeight())
+        else if(getHeight()-100<=coordY && coordY<=getHeight())
         {
             startScrollThread();
             scrollThread.setScrollByY(25);
-            //nestedScrollView.scrollBy(0,20);
         }
         else
         {
@@ -127,8 +132,16 @@ public class CustomRecyclerView extends RecyclerView {
         }
         if(scrollThread.getState().equals(Thread.State.TERMINATED))
         {
-            scrollThread=new ScrollThread(nestedScrollView);
+            scrollThread=new ScrollThread(this);
             scrollThread.start();
         }
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 }

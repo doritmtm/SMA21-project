@@ -1,8 +1,8 @@
 package com.stae.staefilemanager;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -10,6 +10,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -18,8 +19,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StatFs;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,30 +31,42 @@ import android.widget.TextView;
 
 import com.google.common.io.Files;
 import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
+import com.stae.staefilemanager.adapter.StorageDeviceRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
+import com.stae.staefilemanager.model.StorageDeviceItem;
+import com.stae.staefilemanager.thread.DirectoryContentsLoaderThread;
+import com.stae.staefilemanager.thread.FileOperationThread;
 import com.stae.staefilemanager.ui.CustomRecyclerView;
-import com.stae.staefilemanager.ui.LockableNestedScrollView;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class FileManagerActivity extends AppCompatActivity {
     private CustomRecyclerView fileRecyclerView;
     private FileRecyclerViewAdapter fileItemAdapter;
-    private ArrayList<FileItem> fileItemArray;
+    private List<FileItem> fileItemArray;
     private ActivityResultLauncher<String> activityResultLauncher;
-    private LockableNestedScrollView fileScroll;
     private SharedPreferences pref;
     private Toolbar toolbar;
-    private LinearLayout linear1;
-    private ArrayList<File> filesSelected;
+    private List<File> filesSelected;
     private FileOperations fileOperation;
-    private enum FileOperations{COPY,CUT,DELETE,NOOP};
     private URI currentDir;
+    private RecyclerView storageDeviceRecyclerView;
+    private StorageDeviceRecyclerViewAdapter storageDeviceAdapter;
+    private ArrayList<StorageDeviceItem> storageDeviceItemArray;
+    private AlertDialog currentDialog;
+    private DirectoryContentsLoaderThread directoryContentsThread;
+    private FileOperationThread fileOperationThread;
+    private List<OnBackPressedCallback> backCallbacks=new ArrayList<>();
+
+    public enum FileOperations{COPY,CUT,DELETE,NOOP};
 
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
     {
@@ -64,24 +77,28 @@ public class FileManagerActivity extends AppCompatActivity {
             EditText filenameInput;
             TextView filenameText;
             View view;
-            File currentDirFile=new File(currentDir);
+            EditText dialogChangePathInput;
             switch(item.getItemId())
             {
+                case R.id.toolbarClose:
+                    finish();
+                    break;
                 case R.id.toolbarNewFile:
                     view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_create,null);
-                    filenameInput=view.findViewById(R.id.dialogFilenameInput);
-                    filenameText=view.findViewById(R.id.dialogFilenameText);
+                    filenameInput=view.findViewById(R.id.dialogChangePathInput);
+                    filenameText=view.findViewById(R.id.dialogChangePathText);
                     filenameText.setText("File name:");
                     dialog=new AlertDialog.Builder(FileManagerActivity.this).setTitle("Create new file:")
                             .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        Files.touch(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        FileUtils.touch(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
+                                        showErrorDialog(e.getMessage());
                                         e.printStackTrace();
                                     }
-                                    loadDirectoryContentsAndUpdateUI(currentDir);
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -92,26 +109,25 @@ public class FileManagerActivity extends AppCompatActivity {
                             })
                             .setView(view)
                             .create();
+                    currentDialog=dialog;
                     dialog.show();
                     break;
                 case R.id.toolbarNewFolder:
                     view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_create,null);
-                    filenameInput=view.findViewById(R.id.dialogFilenameInput);
-                    filenameText=view.findViewById(R.id.dialogFilenameText);
+                    filenameInput=view.findViewById(R.id.dialogChangePathInput);
+                    filenameText=view.findViewById(R.id.dialogChangePathText);
                     filenameText.setText("Folder name:");
                     dialog=new AlertDialog.Builder(FileManagerActivity.this).setTitle("Create new folder:")
                             .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        if(!new File(currentDir.resolve(filenameInput.getText().toString())).mkdir())
-                                        {
-                                            throw new IOException();
-                                        }
+                                        FileUtils.forceMkdir(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
+                                        showErrorDialog(e.getMessage());
                                         e.printStackTrace();
                                     }
-                                    loadDirectoryContentsAndUpdateUI(currentDir);
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -122,6 +138,56 @@ public class FileManagerActivity extends AppCompatActivity {
                             })
                             .setView(view)
                             .create();
+                    currentDialog=dialog;
+                    dialog.show();
+                    break;
+                case R.id.toolbarChangePath:
+                    view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_change_path,null);
+                    storageDeviceRecyclerView=view.findViewById(R.id.storageDeviceRecyclerView);
+                    dialogChangePathInput=view.findViewById(R.id.dialogChangePathInput);
+                    dialogChangePathInput.setText(currentDir.getPath());
+                    populateStorageDevicesAvailable();
+                    dialog=new AlertDialog.Builder(FileManagerActivity.this)
+                            .setTitle("Change Current Path")
+                            .setView(view)
+                            .setPositiveButton("Change", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    try {
+                                        currentDir=new URI("file:"+dialogChangePathInput.getText().toString());
+                                        loadDirectoryContentsAndUpdateUI(currentDir);
+                                        removeAllBackCallbacks();
+                                    } catch (URISyntaxException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            })
+                            .create();
+                    currentDialog=dialog;
+                    dialog.show();
+                    break;
+                case R.id.toolbarStorageDevices:
+                    view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_storage_devices,null);
+                    storageDeviceRecyclerView=view.findViewById(R.id.storageDeviceRecyclerView);
+                    populateStorageDevicesAvailable();
+                    dialog=new AlertDialog.Builder(FileManagerActivity.this)
+                            .setTitle("Storage Devices")
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            })
+                            .setView(view)
+                            .create()
+                            ;
+                    currentDialog=dialog;
                     dialog.show();
                     break;
                 case  R.id.toolbarPaste:
@@ -141,8 +207,12 @@ public class FileManagerActivity extends AppCompatActivity {
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
+            AlertDialog dialog;
             switch(item.getItemId())
             {
+                case R.id.toolbarSelectAll:
+                    fileItemAdapter.checkEveryone();
+                    break;
                 case R.id.toolbarCopy2:
                     memorizeFilesSelected();
                     fileOperation=FileOperations.COPY;
@@ -153,10 +223,35 @@ public class FileManagerActivity extends AppCompatActivity {
                     break;
                 case R.id.toolbarDelete2:
                     memorizeFilesSelected();
-                    fileOperation=FileOperations.DELETE;
-                    performFileOperation();
-                    fileOperation=FileOperations.NOOP;
-                    onBackPressed();
+                    String items;
+                    if(filesSelected.size()==1)
+                    {
+                        items="item";
+                    }
+                    else
+                    {
+                        items="items";
+                    }
+                    dialog=new AlertDialog.Builder(FileManagerActivity.this)
+                            .setTitle("Confirm Delete")
+                            .setMessage("Are you sure you want to delete "+filesSelected.size()+" "+items+"?")
+                            .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    fileOperation=FileOperations.DELETE;
+                                    performFileOperation();
+                                    fileOperation=FileOperations.NOOP;
+                                    onBackPressed();
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            })
+                            .create();
+                    dialog.show();
                     break;
                 case R.id.toolbarSettings2:
                     Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
@@ -201,18 +296,21 @@ public class FileManagerActivity extends AppCompatActivity {
             }
         });
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //setSupportActionBar(toolbar);
         toolbar.getMenu().clear();
         toolbar.inflateMenu(R.menu.toolbar_menu);
         toolbar.setOnMenuItemClickListener(new ToolbarMenuListener());
         fileRecyclerView=findViewById(R.id.fileRecyclerView);
         fileRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         fileRecyclerView.setNestedScrollingEnabled(false);
-        linear1=findViewById(R.id.linear1);
-        fileScroll=findViewById(R.id.fileScroll);
-        fileScroll.post(() -> fileScroll.scrollTo(0,0));
-        fileRecyclerView.setNestedScrollView(fileScroll);
-        fileItemArray=loadDirectoryContents(URI.create("file:/sdcard/"));
+        currentDir=AppState.instance().getCurrentDir();
+        if(currentDir==null)
+        {
+            String firstStorageDevicePath=getExternalFilesDir(null).toURI().getPath().split("Android")[0];
+            currentDir=URI.create("file:"+firstStorageDevicePath);
+        }
+        toolbar.setSubtitle(currentDir.getPath());
+        loadDirectoryContentsAndUpdateUI(currentDir);
         fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
     }
@@ -223,25 +321,61 @@ public class FileManagerActivity extends AppCompatActivity {
         checkWritePermission();
     }
 
-    private ArrayList<FileItem> loadDirectoryContents(URI uri)
-    {
-        currentDir=uri;
-        File file=new File(uri);
-        ArrayList<FileItem> fileItemsArray=new ArrayList<>();
-        FileItem fileItem;
-        if(file.isDirectory())
+    @Override
+    public void onBackPressed() {
+        if(getOnBackPressedDispatcher().hasEnabledCallbacks())
         {
-            File[] files=file.listFiles();
-            if(files!=null)
+            super.onBackPressed();
+        }
+        else
+        {
+            File currentDirFile = new File(currentDir);
+            File parentFile = currentDirFile.getParentFile();
+            if (parentFile != null)
             {
-
-                for(File f:files)
-                {
-                    fileItem=createFileItem(f);
-                    fileItemsArray.add(fileItem);
-                }
+                loadDirectoryContentsAndUpdateUI(parentFile.toURI());
+            }
+            else
+            {
+                finish();
             }
         }
+    }
+
+    private List<FileItem> loadDirectoryContents(URI uri)
+    {
+        currentDir=uri;
+        AppState.instance().setCurrentDir(currentDir);
+        List<FileItem> fileItemsArray=new CopyOnWriteArrayList<>();
+        if(directoryContentsThread!=null)
+        {
+            while(directoryContentsThread.getState()!=Thread.State.TERMINATED);
+        }
+        directoryContentsThread=new DirectoryContentsLoaderThread(uri,fileItemsArray);
+        directoryContentsThread.shouldNotUpdateUI();
+        directoryContentsThread.start();
+        return fileItemsArray;
+    }
+
+    private List<FileItem> loadDirectoryContents(URI uri,boolean updateUI)
+    {
+        currentDir=uri;
+        AppState.instance().setCurrentDir(currentDir);
+        List<FileItem> fileItemsArray=new CopyOnWriteArrayList<>();
+        if(directoryContentsThread!=null)
+        {
+            while(directoryContentsThread.getState()!=Thread.State.TERMINATED);
+        }
+        directoryContentsThread=new DirectoryContentsLoaderThread(uri,fileItemsArray);
+        if(updateUI)
+        {
+            directoryContentsThread.shouldUpdateUI();
+        }
+        else
+        {
+            directoryContentsThread.shouldNotUpdateUI();
+        }
+        directoryContentsThread.start();
         return fileItemsArray;
     }
 
@@ -273,15 +407,19 @@ public class FileManagerActivity extends AppCompatActivity {
 
     public void loadDirectoryContentsAndUpdateUI(URI uri)
     {
-        toolbar.setSubtitle(uri.getPath());
-        fileItemArray=loadDirectoryContents(uri);
-        FileRecyclerViewAdapter fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
+        fileItemArray=loadDirectoryContents(uri,true);
+    }
+
+    public void updateDirectoryContentsUI()
+    {
+        toolbar.setSubtitle(currentDir.getPath());
+        fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
     }
 
     private void memorizeFilesSelected()
     {
-        filesSelected=new ArrayList<>();
+        filesSelected=new CopyOnWriteArrayList<>();
         for(FileItem fi:fileItemArray)
         {
             if(fi.isChecked())
@@ -313,68 +451,107 @@ public class FileManagerActivity extends AppCompatActivity {
 
     private void performFileOperation()
     {
-        File currentDirFile=new File(currentDir);
-        if(fileOperation==FileOperations.COPY)
+        if(fileOperationThread!=null)
         {
-            Log.d("MYAPPP","COPY");
-            for(File f:filesSelected)
+            while(fileOperationThread.getState()!=Thread.State.TERMINATED);
+        }
+        fileOperationThread=new FileOperationThread(filesSelected);
+        fileOperationThread.setFileOperation(fileOperation);
+        fileOperationThread.start();
+    }
+
+    private void populateStorageDevicesAvailable()
+    {
+        storageDeviceItemArray=findStorageDevicesAvailable();
+        storageDeviceAdapter=new StorageDeviceRecyclerViewAdapter(storageDeviceItemArray,this);
+        storageDeviceRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        storageDeviceRecyclerView.setAdapter(storageDeviceAdapter);
+    }
+
+    private ArrayList<StorageDeviceItem> findStorageDevicesAvailable()
+    {
+        ArrayList<StorageDeviceItem> sdiarray=new ArrayList<>();
+        StorageDeviceItem sdi;
+        File[] devices=getExternalFilesDirs(null);
+        int i=0;
+        for(File d:devices)
+        {
+            sdi=createStorageDeviceItem(d,i);
+            i++;
+            sdiarray.add(sdi);
+        }
+        return sdiarray;
+    }
+
+    private StorageDeviceItem createStorageDeviceItem(File d,int i)
+    {
+        StorageDeviceItem sdi=new StorageDeviceItem();
+        try {
+            sdi.setMountPath(new URI(d.toURI().toString().split("Android")[0]));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        if(i==0)
+        {
+            sdi.setIcon(AppCompatResources.getDrawable(this,R.drawable.cellphone));
+            sdi.setTitle("Internal Storage");
+        }
+        else
+        {
+            sdi.setIcon(AppCompatResources.getDrawable(this,R.drawable.sd));
+            sdi.setTitle("External Storage");
+        }
+        updateStorageDeviceItemFileSystemStatus(sdi);
+        return sdi;
+    }
+
+    public AlertDialog getCurrentDialog() {
+        return currentDialog;
+    }
+
+    public static void updateStorageDeviceItemFileSystemStatus(StorageDeviceItem sdi)
+    {
+        StatFs statFs=new StatFs(sdi.getMountPath().getPath());
+        sdi.setFreeBytes(statFs.getAvailableBytes());
+        sdi.setTotalBytes(statFs.getTotalBytes());
+        sdi.setUsedBytes(sdi.getTotalBytes()-sdi.getFreeBytes());
+        sdi.setFreeGB("free\n"+String.format("%,.2f",(double)sdi.getFreeBytes()/1073741824.0)+" GB");
+        sdi.setTotalGB("total\n"+String.format("%,.2f",(double)sdi.getTotalBytes()/1073741824.0)+" GB");
+        sdi.setUsedGB("used\n"+String.format("%,.2f",(double)sdi.getUsedBytes()/1073741824.0)+" GB");
+        sdi.setPercentageUsed((int)((double)sdi.getUsedBytes()/(double)sdi.getTotalBytes()*10000));
+    }
+
+    public void addBackCallback(OnBackPressedCallback callback)
+    {
+        backCallbacks.add(callback);
+        getOnBackPressedDispatcher().addCallback(callback);
+    }
+
+    public void removeAllBackCallbacks()
+    {
+        for(OnBackPressedCallback b:backCallbacks)
+        {
+            if(b!=null)
             {
-                try {
-                    Log.d("MYAPPP",f+","+new File(currentDir.resolve(f.getName())));
-                    if(f.isDirectory())
-                    {
-                        FileUtils.copyDirectory(f,new File(currentDir.resolve(f.getName())));
-                    }
-                    else
-                    {
-                        FileUtils.copyFile(f,new File(currentDir.resolve(f.getName())));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                b.remove();
             }
         }
-        if(fileOperation==FileOperations.CUT)
-        {
-            Log.d("MYAPPP","CUT");
-            for(File f:filesSelected)
-            {
-                try {
-                    if(f.isDirectory())
-                    {
-                        FileUtils.copyDirectory(f,new File(currentDir.resolve(f.getName())));
-                        FileUtils.deleteDirectory(f);
+        backCallbacks=new ArrayList<>();
+    }
+
+    public void showErrorDialog(String errorMessage)
+    {
+        AlertDialog dialog=new AlertDialog.Builder(this)
+                .setTitle("Error")
+                .setMessage(errorMessage)
+                .setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
                     }
-                    else
-                    {
-                        FileUtils.copyFile(f,new File(currentDir.resolve(f.getName())));
-                        FileUtils.forceDelete(f);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        if(fileOperation==FileOperations.DELETE)
-        {
-            for(File f:filesSelected)
-            {
-                try {
-                    if(f.isDirectory())
-                    {
-                        FileUtils.deleteDirectory(f);
-                    }
-                    else
-                    {
-                        FileUtils.forceDelete(f);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        fileOperation=FileOperations.NOOP;
-        loadDirectoryContentsAndUpdateUI(currentDir);
+                })
+                .create();
+        dialog.show();
     }
 
 }
