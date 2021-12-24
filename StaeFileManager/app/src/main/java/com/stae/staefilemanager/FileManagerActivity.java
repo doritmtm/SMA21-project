@@ -35,6 +35,7 @@ import com.stae.staefilemanager.adapter.StorageDeviceRecyclerViewAdapter;
 import com.stae.staefilemanager.model.FileItem;
 import com.stae.staefilemanager.model.StorageDeviceItem;
 import com.stae.staefilemanager.thread.DirectoryContentsLoaderThread;
+import com.stae.staefilemanager.thread.FileOperationThread;
 import com.stae.staefilemanager.ui.CustomRecyclerView;
 
 import org.apache.commons.io.FileUtils;
@@ -54,16 +55,18 @@ public class FileManagerActivity extends AppCompatActivity {
     private ActivityResultLauncher<String> activityResultLauncher;
     private SharedPreferences pref;
     private Toolbar toolbar;
-    private ArrayList<File> filesSelected;
+    private List<File> filesSelected;
     private FileOperations fileOperation;
-    private enum FileOperations{COPY,CUT,DELETE,NOOP};
     private URI currentDir;
     private RecyclerView storageDeviceRecyclerView;
     private StorageDeviceRecyclerViewAdapter storageDeviceAdapter;
     private ArrayList<StorageDeviceItem> storageDeviceItemArray;
     private AlertDialog currentDialog;
     private DirectoryContentsLoaderThread directoryContentsThread;
+    private FileOperationThread fileOperationThread;
     private List<OnBackPressedCallback> backCallbacks=new ArrayList<>();
+
+    public enum FileOperations{COPY,CUT,DELETE,NOOP};
 
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
     {
@@ -391,7 +394,7 @@ public class FileManagerActivity extends AppCompatActivity {
 
     private void memorizeFilesSelected()
     {
-        filesSelected=new ArrayList<>();
+        filesSelected=new CopyOnWriteArrayList<>();
         for(FileItem fi:fileItemArray)
         {
             if(fi.isChecked())
@@ -423,64 +426,13 @@ public class FileManagerActivity extends AppCompatActivity {
 
     private void performFileOperation()
     {
-        if(fileOperation==FileOperations.COPY)
+        if(fileOperationThread!=null)
         {
-            for(File f:filesSelected)
-            {
-                try {
-                    if(f.isDirectory())
-                    {
-                        FileUtils.copyDirectory(f,new File(currentDir.resolve(f.getName())));
-                    }
-                    else
-                    {
-                        FileUtils.copyFile(f,new File(currentDir.resolve(f.getName())));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            while(fileOperationThread.getState()!=Thread.State.TERMINATED);
         }
-        if(fileOperation==FileOperations.CUT)
-        {
-            for(File f:filesSelected)
-            {
-                try {
-                    if(f.isDirectory())
-                    {
-                        FileUtils.copyDirectory(f,new File(currentDir.resolve(f.getName())));
-                        FileUtils.deleteDirectory(f);
-                    }
-                    else
-                    {
-                        FileUtils.copyFile(f,new File(currentDir.resolve(f.getName())));
-                        FileUtils.forceDelete(f);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        if(fileOperation==FileOperations.DELETE)
-        {
-            for(File f:filesSelected)
-            {
-                try {
-                    if(f.isDirectory())
-                    {
-                        FileUtils.deleteDirectory(f);
-                    }
-                    else
-                    {
-                        FileUtils.forceDelete(f);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        fileOperation=FileOperations.NOOP;
-        loadDirectoryContentsAndUpdateUI(currentDir);
+        fileOperationThread=new FileOperationThread(filesSelected);
+        fileOperationThread.setFileOperation(fileOperation);
+        fileOperationThread.start();
     }
 
     private void populateStorageDevicesAvailable()
