@@ -52,7 +52,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                     {
                         if (new File(fileItem.getUri()).isDirectory()) {
                             fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
-                            fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
+                            /*fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
                                 @Override
                                 public void handleOnBackPressed() {
                                     if (fileItem.getParentURI() != null) {
@@ -60,7 +60,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                                         remove();
                                     }
                                 }
-                            });
+                            });*/
                         }
                     }
                     else
@@ -83,7 +83,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                         fileRecyclerView.setLocked(true);
                         fileRecyclerView.setSelectionMode(true);
                         fileRecyclerView.setCurrentChildInFocus(itemView);
-                        fileManagerActivity.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+                        fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
                             @Override
                             public void handleOnBackPressed() {
                                 stopSelectionMode();

@@ -3,9 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:icon="@drawable/file"
-        android:title="Item"
-        app:showAsAction="always" />
+        android:id="@+id/toolbarClose"
+        android:icon="@drawable/close"
+        android:title="Close"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/toolbarNewFile"
         android:title="New File" />

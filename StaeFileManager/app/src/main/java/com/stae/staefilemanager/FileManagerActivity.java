@@ -77,6 +77,9 @@ public class FileManagerActivity extends AppCompatActivity {
             EditText dialogChangePathInput;
             switch(item.getItemId())
             {
+                case R.id.toolbarClose:
+                    finish();
+                    break;
                 case R.id.toolbarNewFile:
                     view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_create,null);
                     filenameInput=view.findViewById(R.id.dialogChangePathInput);
@@ -265,16 +268,21 @@ public class FileManagerActivity extends AppCompatActivity {
             }
         });
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //setSupportActionBar(toolbar);
         toolbar.getMenu().clear();
         toolbar.inflateMenu(R.menu.toolbar_menu);
         toolbar.setOnMenuItemClickListener(new ToolbarMenuListener());
         fileRecyclerView=findViewById(R.id.fileRecyclerView);
         fileRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         fileRecyclerView.setNestedScrollingEnabled(false);
-        String firstStorageDevicePath=getExternalFilesDir(null).toURI().getPath().split("Android")[0];
-        toolbar.setSubtitle(firstStorageDevicePath);
-        loadDirectoryContentsAndUpdateUI(URI.create("file:"+firstStorageDevicePath));
+        currentDir=AppState.instance().getCurrentDir();
+        if(currentDir==null)
+        {
+            String firstStorageDevicePath=getExternalFilesDir(null).toURI().getPath().split("Android")[0];
+            currentDir=URI.create("file:"+firstStorageDevicePath);
+        }
+        toolbar.setSubtitle(currentDir.getPath());
+        loadDirectoryContentsAndUpdateUI(currentDir);
         fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
     }
@@ -285,9 +293,31 @@ public class FileManagerActivity extends AppCompatActivity {
         checkWritePermission();
     }
 
+    @Override
+    public void onBackPressed() {
+        if(getOnBackPressedDispatcher().hasEnabledCallbacks())
+        {
+            super.onBackPressed();
+        }
+        else
+        {
+            File currentDirFile = new File(currentDir);
+            File parentFile = currentDirFile.getParentFile();
+            if (parentFile != null)
+            {
+                loadDirectoryContentsAndUpdateUI(parentFile.toURI());
+            }
+            else
+            {
+                finish();
+            }
+        }
+    }
+
     private List<FileItem> loadDirectoryContents(URI uri)
     {
         currentDir=uri;
+        AppState.instance().setCurrentDir(currentDir);
         List<FileItem> fileItemsArray=new CopyOnWriteArrayList<>();
         if(directoryContentsThread!=null)
         {
@@ -302,6 +332,7 @@ public class FileManagerActivity extends AppCompatActivity {
     private List<FileItem> loadDirectoryContents(URI uri,boolean updateUI)
     {
         currentDir=uri;
+        AppState.instance().setCurrentDir(currentDir);
         List<FileItem> fileItemsArray=new CopyOnWriteArrayList<>();
         if(directoryContentsThread!=null)
         {
