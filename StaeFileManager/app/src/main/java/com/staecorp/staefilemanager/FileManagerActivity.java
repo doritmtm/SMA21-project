@@ -67,7 +67,7 @@ public class FileManagerActivity extends AppCompatActivity {
 
     public enum FileOperations{COPY,CUT,DELETE,NOOP};
 
-    public enum SortModes{NAME,DATE,SIZE};
+    public enum SortModes{NAME,DATE,SIZE,NOOP};
 
     public enum DetailModes{SIZE,DATE};
 
@@ -332,6 +332,7 @@ public class FileManagerActivity extends AppCompatActivity {
         {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
+        AppState.instance().setSortMode(AppState.sortModeTranslated(pref.getString("sortMode","NAME")));
         activityResultLauncher=registerForActivityResult(new ActivityResultContracts.RequestPermission(),granted ->{
             if(granted)
             {
@@ -361,9 +362,6 @@ public class FileManagerActivity extends AppCompatActivity {
             currentDir=URI.create("file:"+firstStorageDevicePath);
         }
         toolbar.setSubtitle(currentDir.getPath());
-        loadDirectoryContentsAndUpdateUI(currentDir);
-        fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
-        fileRecyclerView.setAdapter(fileItemAdapter);
     }
 
     @Override
@@ -426,7 +424,7 @@ public class FileManagerActivity extends AppCompatActivity {
         {
             directoryContentsThread.shouldNotUpdateUI();
         }
-        directoryContentsThread.setSortMode(SortModes.SIZE);
+        directoryContentsThread.setSortMode(AppState.instance().getSortMode());
         directoryContentsThread.setDetailMode(DetailModes.DATE);
         directoryContentsThread.start();
         return fileItemsArray;
@@ -449,6 +447,10 @@ public class FileManagerActivity extends AppCompatActivity {
                         }
                     });
             builder.create().show();
+        }
+        if(ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+        {
+            loadDirectoryContentsAndUpdateUI(currentDir);
         }
     }
 

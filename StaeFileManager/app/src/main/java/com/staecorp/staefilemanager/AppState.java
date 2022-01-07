@@ -11,6 +11,7 @@ public class AppState {
     private SharedPreferences preferences;
     private FileManagerActivity fileManagerActivity;
     private URI currentDir;
+    private FileManagerActivity.SortModes sortMode=FileManagerActivity.SortModes.NAME;
     public AppState()
     {
         preferences=context.getSharedPreferences("StaeFileManagerPref",Context.MODE_PRIVATE);
@@ -75,5 +76,25 @@ public class AppState {
             return String.format("%,.2f",(float)bytes/1073741824.0)+" GB";
         }
         return "";
+    }
+
+    public FileManagerActivity.SortModes getSortMode() {
+        return sortMode;
+    }
+
+    public void setSortMode(FileManagerActivity.SortModes sortMode) {
+        this.sortMode = sortMode;
+    }
+
+    public static FileManagerActivity.SortModes sortModeTranslated(String s)
+    {
+        switch(s)
+        {
+            case "NOOP": return FileManagerActivity.SortModes.NOOP;
+            case "NAME": return FileManagerActivity.SortModes.NAME;
+            case "DATE": return FileManagerActivity.SortModes.DATE;
+            case "SIZE": return FileManagerActivity.SortModes.SIZE;
+        }
+        return FileManagerActivity.SortModes.NOOP;
     }
 }

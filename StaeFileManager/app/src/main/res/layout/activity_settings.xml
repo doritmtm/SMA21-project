@@ -57,32 +57,61 @@
                 android:textSize="16sp"
                 app:switchMinWidth="60dp" />
 
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Sort items by:"
-                android:textSize="20sp" />
-
-            <RadioGroup
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="right">
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="28dp"
+                android:layout_marginBottom="20dp"
+                android:orientation="horizontal">
 
-                <RadioButton
-                    android:id="@+id/radioButton"
+                <TextView
+                    android:id="@+id/textView2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="RadioButton" />
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_weight="1"
+                    android:text="Sort items by:"
+                    android:textSize="20sp" />
 
-                <RadioButton
-                    android:id="@+id/radioButton2"
+                <RadioGroup
+                    android:id="@+id/radioSortItemsGroup"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="RadioButton" />
-            </RadioGroup>
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="2">
+
+                    <RadioButton
+                        android:id="@+id/radioNothing"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="5dp"
+                        android:text="No sorting" />
+
+                    <RadioButton
+                        android:id="@+id/radioName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="5dp"
+                        android:text="Name" />
+
+                    <RadioButton
+                        android:id="@+id/radioDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="5dp"
+                        android:text="Date" />
+
+                    <RadioButton
+                        android:id="@+id/radioSize"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="5dp"
+                        android:text="Size" />
+                </RadioGroup>
+            </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
