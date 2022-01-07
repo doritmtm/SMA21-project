@@ -1,6 +1,5 @@
-package com.stae.staefilemanager;
+package com.staecorp.staefilemanager;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -12,6 +11,7 @@ public class AppState {
     private SharedPreferences preferences;
     private FileManagerActivity fileManagerActivity;
     private URI currentDir;
+    private FileManagerActivity.SortModes sortMode=FileManagerActivity.SortModes.NAME;
     public AppState()
     {
         preferences=context.getSharedPreferences("StaeFileManagerPref",Context.MODE_PRIVATE);
@@ -55,5 +55,46 @@ public class AppState {
 
     public void setCurrentDir(URI currentDir) {
         this.currentDir = currentDir;
+    }
+
+    public static String filesizeDisplayString(long bytes)
+    {
+        if(0 <= bytes && bytes <= 1023)
+        {
+            return bytes+" B";
+        }
+        if(1024 <= bytes && bytes <= 1048575)
+        {
+            return String.format("%,.2f",(float)bytes/1024.0)+" KB";
+        }
+        if(1048576 <= bytes && bytes <= 1073741823)
+        {
+            return String.format("%,.2f",(float)bytes/1048576.0)+" MB";
+        }
+        if(1073741824 <= bytes)
+        {
+            return String.format("%,.2f",(float)bytes/1073741824.0)+" GB";
+        }
+        return "";
+    }
+
+    public FileManagerActivity.SortModes getSortMode() {
+        return sortMode;
+    }
+
+    public void setSortMode(FileManagerActivity.SortModes sortMode) {
+        this.sortMode = sortMode;
+    }
+
+    public static FileManagerActivity.SortModes sortModeTranslated(String s)
+    {
+        switch(s)
+        {
+            case "NOOP": return FileManagerActivity.SortModes.NOOP;
+            case "NAME": return FileManagerActivity.SortModes.NAME;
+            case "DATE": return FileManagerActivity.SortModes.DATE;
+            case "SIZE": return FileManagerActivity.SortModes.SIZE;
+        }
+        return FileManagerActivity.SortModes.NOOP;
     }
 }

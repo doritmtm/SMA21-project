@@ -1,4 +1,4 @@
-package com.stae.staefilemanager.model;
+package com.staecorp.staefilemanager.model;
 
 import android.graphics.drawable.Drawable;
 

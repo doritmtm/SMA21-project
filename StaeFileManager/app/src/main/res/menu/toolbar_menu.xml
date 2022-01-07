@@ -7,25 +7,54 @@
         android:icon="@drawable/close"
         android:title="Close"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/toolbarNewFile"
-        android:title="New File" />
-    <item
-        android:id="@+id/toolbarNewFolder"
-        android:title="New Folder" />
-    <item
-        android:id="@+id/toolbarPaste"
-        android:title="@android:string/paste"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/toolbarChangePath"
-        android:title="Change Path"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/toolbarStorageDevices"
-        android:title="Storage Devices" />
-    <item
-        android:id="@+id/toolbarSettings"
-        android:title="Settings"
-        app:showAsAction="never" />
+    <group android:id="@+id/mainGroup">
+        <item
+            android:id="@+id/toolbarNewFile"
+            android:title="New File" />
+        <item
+            android:id="@+id/toolbarNewFolder"
+            android:title="New Folder" />
+        <item
+            android:id="@+id/toolbarPaste"
+            android:title="Paste"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/toolbarChangePath"
+            android:title="Change Path"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/toolbarStorageDevices"
+            android:title="Storage Devices" />
+        <item
+            android:id="@+id/toolbarSettings"
+            android:title="Settings"
+            app:showAsAction="never" />
+    </group>
+    <group
+        android:id="@+id/selectionGroup"
+        android:visible="false">
+        <item
+            android:id="@+id/toolbarSelectAll"
+            android:title="Select All"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/toolbarCopy2"
+            android:title="Copy"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/toolbarCut2"
+            android:title="Cut"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/toolbarRename"
+            android:title="Rename"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/toolbarDelete2"
+            android:title="Delete" />
+        <item
+            android:id="@+id/toolbarSettings2"
+            android:title="Settings"
+            app:showAsAction="never" />
+    </group>
 </menu>

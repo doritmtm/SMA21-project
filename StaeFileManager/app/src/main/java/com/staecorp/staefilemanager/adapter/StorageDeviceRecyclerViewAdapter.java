@@ -1,6 +1,5 @@
-package com.stae.staefilemanager.adapter;
+package com.staecorp.staefilemanager.adapter;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,9 +10,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.stae.staefilemanager.FileManagerActivity;
-import com.stae.staefilemanager.model.StorageDeviceItem;
-import com.stae.staefilemanager.R;
+import com.staecorp.staefilemanager.FileManagerActivity;
+import com.staecorp.staefilemanager.model.StorageDeviceItem;
+import com.staecorp.staefilemanager.R;
 
 import java.util.ArrayList;
 

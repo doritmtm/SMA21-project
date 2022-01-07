@@ -1,19 +1,17 @@
-package com.stae.staefilemanager.model;
+package com.staecorp.staefilemanager.model;
 
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.content.res.ResourcesCompat;
 
-import com.stae.staefilemanager.AppState;
-import com.stae.staefilemanager.R;
-import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
+import com.staecorp.staefilemanager.AppState;
+import com.staecorp.staefilemanager.R;
+import com.staecorp.staefilemanager.adapter.FileRecyclerViewAdapter;
 
 import java.net.URI;
 
 public class FileItem {
-    private String name;
+    private String name,detail;
     private Drawable icon;
     private URI uri,parentURI;
     private boolean checked;
@@ -74,5 +72,13 @@ public class FileItem {
 
     public void setViewHolder(FileRecyclerViewAdapter.ViewHolder viewHolder) {
         this.viewHolder = viewHolder;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
     }
 }

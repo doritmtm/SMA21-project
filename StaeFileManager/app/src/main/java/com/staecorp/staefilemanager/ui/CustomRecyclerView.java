@@ -1,8 +1,7 @@
-package com.stae.staefilemanager.ui;
+package com.staecorp.staefilemanager.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -10,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.stae.staefilemanager.thread.ScrollThread;
+import com.staecorp.staefilemanager.thread.ScrollThread;
 
 public class CustomRecyclerView extends RecyclerView {
     private boolean selectionMode=false;

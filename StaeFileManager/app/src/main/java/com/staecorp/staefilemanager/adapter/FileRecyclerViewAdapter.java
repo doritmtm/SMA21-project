@@ -1,4 +1,4 @@
-package com.stae.staefilemanager.adapter;
+package com.staecorp.staefilemanager.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,11 +11,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.stae.staefilemanager.AppState;
-import com.stae.staefilemanager.FileManagerActivity;
-import com.stae.staefilemanager.R;
-import com.stae.staefilemanager.model.FileItem;
-import com.stae.staefilemanager.ui.CustomRecyclerView;
+import com.staecorp.staefilemanager.FileManagerActivity;
+import com.staecorp.staefilemanager.R;
+import com.staecorp.staefilemanager.model.FileItem;
+import com.staecorp.staefilemanager.ui.CustomRecyclerView;
 
 import java.io.File;
 import java.util.List;
@@ -37,12 +36,13 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
-        private TextView fileNameText;
+        private TextView fileNameText,fileDetailsText;
         private ImageView iconView,checkView;
         private FileItem fileItem;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             fileNameText=itemView.findViewById(R.id.fileNameText);
+            fileDetailsText=itemView.findViewById(R.id.fileDetailsText);
             iconView=itemView.findViewById(R.id.iconView);
             checkView=itemView.findViewById(R.id.checkView);
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -77,8 +77,10 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                         nrSelected=0;
                         changeSelection();
                         toolbar.setTitle(nrSelected+" items selected");
-                        toolbar.getMenu().clear();
-                        toolbar.inflateMenu(R.menu.toolbar_selection_menu);
+                        //toolbar.getMenu().clear();
+                        //toolbar.inflateMenu(R.menu.toolbar_selection_menu);
+                        toolbar.getMenu().setGroupVisible(R.id.selectionGroup,true);
+                        toolbar.getMenu().setGroupVisible(R.id.mainGroup,false);
                         toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarSelectionMenuListener());
                         fileRecyclerView.setLocked(true);
                         fileRecyclerView.setSelectionMode(true);
@@ -126,6 +128,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         FileItem fileItem=fileItemArray.get(position);
         fileItem.setViewHolder(holder);
         holder.fileNameText.setText(fileItem.getName());
+        holder.fileDetailsText.setText(fileItem.getDetail());
         holder.iconView.setImageDrawable(fileItem.getIcon());
         holder.fileItem=fileItem;
         if(fileItem.isChecked())
@@ -181,8 +184,11 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         fileRecyclerView.setSelectionMode(false);
         selectionMode = false;
         toolbar.setTitle(R.string.app_name);
-        toolbar.getMenu().clear();
-        toolbar.inflateMenu(R.menu.toolbar_menu);
+        //toolbar.getMenu().clear();
+        toolbar.getMenu().setGroupVisible(R.id.selectionGroup,false);
+        toolbar.getMenu().setGroupVisible(R.id.mainGroup,true);
+        //toolbar.getMenu().removeGroup();
+        //toolbar.inflateMenu(R.menu.toolbar_menu);
         toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarMenuListener());
     }
 

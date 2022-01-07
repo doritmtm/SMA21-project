@@ -1,4 +1,4 @@
-package com.stae.staefilemanager;
+package com.staecorp.staefilemanager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,10 +12,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RadioGroup;
 
 public class SettingsActivity extends AppCompatActivity {
     private SwitchCompat nightSwitch,systemNightSwitch;
     private NestedScrollView settingsScroll;
+    private RadioGroup sortItemsRadio;
     private SharedPreferences pref;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +68,38 @@ public class SettingsActivity extends AppCompatActivity {
                     {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                     }
+                }
+            }
+        });
+        sortItemsRadio=findViewById(R.id.radioSortItemsGroup);
+        switch(pref.getString("sortMode","NAME"))
+        {
+            case "NOOP": sortItemsRadio.check(R.id.radioNothing); break;
+            case "NAME": sortItemsRadio.check(R.id.radioName); break;
+            case "DATE": sortItemsRadio.check(R.id.radioDate); break;
+            case "SIZE": sortItemsRadio.check(R.id.radioSize); break;
+        }
+        sortItemsRadio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch(checkedId)
+                {
+                    case R.id.radioNothing:
+                        AppState.instance().setSortMode(FileManagerActivity.SortModes.NOOP);
+                        pref.edit().putString("sortMode","NOOP").apply();
+                        break;
+                    case R.id.radioName:
+                        AppState.instance().setSortMode(FileManagerActivity.SortModes.NAME);
+                        pref.edit().putString("sortMode","NAME").apply();
+                        break;
+                    case R.id.radioDate:
+                        AppState.instance().setSortMode(FileManagerActivity.SortModes.DATE);
+                        pref.edit().putString("sortMode","DATE").apply();
+                        break;
+                    case R.id.radioSize:
+                        AppState.instance().setSortMode(FileManagerActivity.SortModes.SIZE);
+                        pref.edit().putString("sortMode","SIZE").apply();
+                        break;
                 }
             }
         });

@@ -15,5 +15,6 @@
         <item name="backgroundColor">#eeeeee</item>
         <item name="cardBackgroundColor">#ffffff</item>
         <item name="iconColor">#666666</item>
+        <item name="detailTextColor">#666666</item>
     </style>
 </resources>

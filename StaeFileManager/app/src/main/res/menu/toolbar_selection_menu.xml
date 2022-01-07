@@ -15,6 +15,10 @@
         android:title="@android:string/cut"
         app:showAsAction="never" />
     <item
+        android:id="@+id/toolbarRename"
+        android:title="Rename"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/toolbarDelete2"
         android:title="Delete" />
     <item
