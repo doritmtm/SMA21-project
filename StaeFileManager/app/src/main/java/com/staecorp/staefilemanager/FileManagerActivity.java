@@ -67,6 +67,8 @@ public class FileManagerActivity extends AppCompatActivity {
 
     public enum FileOperations{COPY,CUT,DELETE,NOOP};
 
+    public enum SortModes{NAME,DATE};
+
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
     {
 
@@ -422,6 +424,7 @@ public class FileManagerActivity extends AppCompatActivity {
         {
             directoryContentsThread.shouldNotUpdateUI();
         }
+        directoryContentsThread.setSortMode(SortModes.NAME);
         directoryContentsThread.start();
         return fileItemsArray;
     }

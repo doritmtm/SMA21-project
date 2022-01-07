@@ -2,17 +2,22 @@ package com.staecorp.staefilemanager.thread;
 
 import androidx.appcompat.content.res.AppCompatResources;
 
+import com.google.common.collect.Ordering;
 import com.staecorp.staefilemanager.AppState;
+import com.staecorp.staefilemanager.FileManagerActivity;
 import com.staecorp.staefilemanager.R;
 import com.staecorp.staefilemanager.model.FileItem;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DirectoryContentsLoaderThread extends Thread {
     private URI uri;
     private List<FileItem> fileItemsArray;
+    private FileManagerActivity.SortModes sortMode;
     private boolean shouldUpdateUI=false;
 
     public DirectoryContentsLoaderThread(URI uri, List<FileItem> fileItemsArray) {
@@ -53,6 +58,7 @@ public class DirectoryContentsLoaderThread extends Thread {
                 AppState.instance().getFileManagerActivity().showErrorDialog("Error opening path: Can not read current directory");
             });
         }
+        sortFileItems();
         if (shouldUpdateUI)
         {
             AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
@@ -81,6 +87,39 @@ public class DirectoryContentsLoaderThread extends Thread {
         return fileItem;
     }
 
+    private void sortFileItems()
+    {
+        switch(sortMode)
+        {
+            case NAME:
+                Collections.sort(fileItemsArray,(fi1,fi2)->{
+                    File fi1File,fi2File;
+                    fi1File=new File(fi1.getUri());
+                    fi2File=new File(fi2.getUri());
+                    if(fi1File.isDirectory() && fi2File.isDirectory())
+                    {
+                        return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
+                    }
+                    if(fi1File.isFile() && fi2File.isFile())
+                    {
+                        return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
+                    }
+                    if(fi1File.isDirectory() && fi2File.isFile())
+                    {
+                        return -1;
+                    }
+                    if(fi1File.isFile() && fi2File.isDirectory())
+                    {
+                        return 1;
+                    }
+                    return 0;
+                });
+                break;
+            case DATE:
+                break;
+        }
+    }
+
     public void shouldUpdateUI() {
         shouldUpdateUI = true;
     }
@@ -88,5 +127,13 @@ public class DirectoryContentsLoaderThread extends Thread {
     public void shouldNotUpdateUI()
     {
         shouldUpdateUI = false;
+    }
+
+    public FileManagerActivity.SortModes getSortMode() {
+        return sortMode;
+    }
+
+    public void setSortMode(FileManagerActivity.SortModes sortMode) {
+        this.sortMode = sortMode;
     }
 }
