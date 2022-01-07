@@ -67,7 +67,9 @@ public class FileManagerActivity extends AppCompatActivity {
 
     public enum FileOperations{COPY,CUT,DELETE,NOOP};
 
-    public enum SortModes{NAME,DATE};
+    public enum SortModes{NAME,DATE,SIZE};
+
+    public enum DetailModes{SIZE,DATE};
 
     public class ToolbarMenuListener implements Toolbar.OnMenuItemClickListener
     {
@@ -424,7 +426,8 @@ public class FileManagerActivity extends AppCompatActivity {
         {
             directoryContentsThread.shouldNotUpdateUI();
         }
-        directoryContentsThread.setSortMode(SortModes.NAME);
+        directoryContentsThread.setSortMode(SortModes.SIZE);
+        directoryContentsThread.setDetailMode(DetailModes.DATE);
         directoryContentsThread.start();
         return fileItemsArray;
     }
@@ -565,9 +568,15 @@ public class FileManagerActivity extends AppCompatActivity {
         sdi.setFreeBytes(statFs.getAvailableBytes());
         sdi.setTotalBytes(statFs.getTotalBytes());
         sdi.setUsedBytes(sdi.getTotalBytes()-sdi.getFreeBytes());
-        sdi.setFreeGB("free\n"+String.format("%,.2f",(double)sdi.getFreeBytes()/1073741824.0)+" GB");
-        sdi.setTotalGB("total\n"+String.format("%,.2f",(double)sdi.getTotalBytes()/1073741824.0)+" GB");
-        sdi.setUsedGB("used\n"+String.format("%,.2f",(double)sdi.getUsedBytes()/1073741824.0)+" GB");
+        //sdi.setFreeGB("free\n"+String.format("%,.2f",(double)sdi.getFreeBytes()/1073741824.0)+" GB");
+        //sdi.setTotalGB("total\n"+String.format("%,.2f",(double)sdi.getTotalBytes()/1073741824.0)+" GB");
+        //sdi.setUsedGB("used\n"+String.format("%,.2f",(double)sdi.getUsedBytes()/1073741824.0)+" GB");
+        //sdi.setFreeGB("free\n"+FileUtils.byteCountToDisplaySize(sdi.getFreeBytes()));
+        //sdi.setTotalGB("total\n"+FileUtils.byteCountToDisplaySize(sdi.getTotalBytes()));
+        //sdi.setUsedGB("used\n"+FileUtils.byteCountToDisplaySize(sdi.getUsedBytes()));
+        sdi.setFreeGB("free\n"+AppState.filesizeDisplayString(sdi.getFreeBytes()));
+        sdi.setTotalGB("total\n"+AppState.filesizeDisplayString(sdi.getTotalBytes()));
+        sdi.setUsedGB("used\n"+AppState.filesizeDisplayString(sdi.getUsedBytes()));
         sdi.setPercentageUsed((int)((double)sdi.getUsedBytes()/(double)sdi.getTotalBytes()*10000));
     }
 

@@ -1,23 +1,32 @@
 package com.staecorp.staefilemanager.thread;
 
+import android.util.Log;
+
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.common.collect.Ordering;
+import com.google.common.io.Files;
 import com.staecorp.staefilemanager.AppState;
 import com.staecorp.staefilemanager.FileManagerActivity;
 import com.staecorp.staefilemanager.R;
 import com.staecorp.staefilemanager.model.FileItem;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.net.URI;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class DirectoryContentsLoaderThread extends Thread {
     private URI uri;
     private List<FileItem> fileItemsArray;
     private FileManagerActivity.SortModes sortMode;
+    private FileManagerActivity.DetailModes detailMode;
     private boolean shouldUpdateUI=false;
 
     public DirectoryContentsLoaderThread(URI uri, List<FileItem> fileItemsArray) {
@@ -72,6 +81,7 @@ public class DirectoryContentsLoaderThread extends Thread {
         FileItem fileItem=new FileItem(file.getName());
         fileItem.setUri(file.toURI());
 
+
         if(file.getParentFile()!=null)
         {
             fileItem.setParentURI(file.getParentFile().toURI());
@@ -79,10 +89,35 @@ public class DirectoryContentsLoaderThread extends Thread {
         if(file.isDirectory())
         {
             fileItem.setIcon(AppCompatResources.getDrawable(AppState.instance().getFileManagerActivity(), R.drawable.folder));
+            switch(detailMode)
+            {
+                case DATE:
+                    Date date=new Date(file.lastModified());
+                    DateFormat dateFormat=new SimpleDateFormat("dd.MM.yyyy HH:mm");
+                    fileItem.setDetail(dateFormat.format(date));
+                    break;
+                default:
+                    fileItem.setDetail("");
+                    break;
+            }
         }
         else
         {
             fileItem.setIcon(AppCompatResources.getDrawable(AppState.instance().getFileManagerActivity(), R.drawable.file));
+            switch(detailMode)
+            {
+                case SIZE:
+                    fileItem.setDetail(AppState.filesizeDisplayString(file.length()));
+                    break;
+                case DATE:
+                    Date date=new Date(file.lastModified());
+                    DateFormat dateFormat=new SimpleDateFormat("dd.MM.yyyy HH:mm");
+                    fileItem.setDetail(dateFormat.format(date)+"\n"+AppState.filesizeDisplayString(file.length()));
+                    break;
+                default:
+                    fileItem.setDetail("");
+                    break;
+            }
         }
         return fileItem;
     }
@@ -116,6 +151,86 @@ public class DirectoryContentsLoaderThread extends Thread {
                 });
                 break;
             case DATE:
+                Collections.sort(fileItemsArray,(fi1,fi2)->{
+                    File fi1File,fi2File;
+                    fi1File=new File(fi1.getUri());
+                    fi2File=new File(fi2.getUri());
+                    if(fi1File.isDirectory() && fi2File.isDirectory())
+                    {
+                        if(fi1File.lastModified()-fi2File.lastModified()<0)
+                        {
+                            return 1;
+                        }
+                        if(fi1File.lastModified()-fi2File.lastModified()==0)
+                        {
+                            return 0;
+                        }
+                        if(fi1File.lastModified()-fi2File.lastModified()>0)
+                        {
+                            return -1;
+                        }
+                    }
+                    if(fi1File.isFile() && fi2File.isFile())
+                    {
+                        if(fi1File.lastModified()-fi2File.lastModified()<0)
+                        {
+                            return 1;
+                        }
+                        if(fi1File.lastModified()-fi2File.lastModified()==0)
+                        {
+                            return 0;
+                        }
+                        if(fi1File.lastModified()-fi2File.lastModified()>0)
+                        {
+                            return -1;
+                        }
+                    }
+                    if(fi1File.isDirectory() && fi2File.isFile())
+                    {
+                        return -1;
+                    }
+                    if(fi1File.isFile() && fi2File.isDirectory())
+                    {
+                        return 1;
+                    }
+                    return 0;
+                });
+                break;
+            case SIZE:
+                Collections.sort(fileItemsArray,(fi1,fi2)->{
+                    File fi1File,fi2File;
+                    fi1File=new File(fi1.getUri());
+                    fi2File=new File(fi2.getUri());
+                    if(fi1File.isDirectory() && fi2File.isDirectory())
+                    {
+                        return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
+                    }
+                    if(fi1File.isFile() && fi2File.isFile())
+                    {
+                        if(fi1File.length()-fi2File.length()<0)
+                        {
+                            return 1;
+                        }
+                        if(fi1File.length()-fi2File.length()==0)
+                        {
+                            return 0;
+                        }
+                        if(fi1File.length()-fi2File.length()>0)
+                        {
+                            return -1;
+                        }
+                    }
+                    if(fi1File.isDirectory() && fi2File.isFile())
+                    {
+                        return -1;
+                    }
+                    if(fi1File.isFile() && fi2File.isDirectory())
+                    {
+                        return 1;
+                    }
+                    Log.d("MYAPPP","REACHED HERE!!!");
+                    return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
+                });
                 break;
         }
     }
@@ -135,5 +250,13 @@ public class DirectoryContentsLoaderThread extends Thread {
 
     public void setSortMode(FileManagerActivity.SortModes sortMode) {
         this.sortMode = sortMode;
+    }
+
+    public FileManagerActivity.DetailModes getDetailMode() {
+        return detailMode;
+    }
+
+    public void setDetailMode(FileManagerActivity.DetailModes detailMode) {
+        this.detailMode = detailMode;
     }
 }

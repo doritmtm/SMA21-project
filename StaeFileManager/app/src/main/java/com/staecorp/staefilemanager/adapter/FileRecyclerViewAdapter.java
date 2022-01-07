@@ -36,12 +36,13 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
-        private TextView fileNameText;
+        private TextView fileNameText,fileDetailsText;
         private ImageView iconView,checkView;
         private FileItem fileItem;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             fileNameText=itemView.findViewById(R.id.fileNameText);
+            fileDetailsText=itemView.findViewById(R.id.fileDetailsText);
             iconView=itemView.findViewById(R.id.iconView);
             checkView=itemView.findViewById(R.id.checkView);
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -127,6 +128,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         FileItem fileItem=fileItemArray.get(position);
         fileItem.setViewHolder(holder);
         holder.fileNameText.setText(fileItem.getName());
+        holder.fileDetailsText.setText(fileItem.getDetail());
         holder.iconView.setImageDrawable(fileItem.getIcon());
         holder.fileItem=fileItem;
         if(fileItem.isChecked())

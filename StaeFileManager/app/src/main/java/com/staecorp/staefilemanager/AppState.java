@@ -55,4 +55,25 @@ public class AppState {
     public void setCurrentDir(URI currentDir) {
         this.currentDir = currentDir;
     }
+
+    public static String filesizeDisplayString(long bytes)
+    {
+        if(0 <= bytes && bytes <= 1023)
+        {
+            return bytes+" B";
+        }
+        if(1024 <= bytes && bytes <= 1048575)
+        {
+            return String.format("%,.2f",(float)bytes/1024.0)+" KB";
+        }
+        if(1048576 <= bytes && bytes <= 1073741823)
+        {
+            return String.format("%,.2f",(float)bytes/1048576.0)+" MB";
+        }
+        if(1073741824 <= bytes)
+        {
+            return String.format("%,.2f",(float)bytes/1073741824.0)+" GB";
+        }
+        return "";
+    }
 }

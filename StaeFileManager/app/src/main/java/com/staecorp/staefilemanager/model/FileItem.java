@@ -11,7 +11,7 @@ import com.staecorp.staefilemanager.adapter.FileRecyclerViewAdapter;
 import java.net.URI;
 
 public class FileItem {
-    private String name;
+    private String name,detail;
     private Drawable icon;
     private URI uri,parentURI;
     private boolean checked;
@@ -72,5 +72,13 @@ public class FileItem {
 
     public void setViewHolder(FileRecyclerViewAdapter.ViewHolder viewHolder) {
         this.viewHolder = viewHolder;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
     }
 }
