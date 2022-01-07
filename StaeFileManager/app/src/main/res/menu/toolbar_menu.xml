@@ -16,7 +16,7 @@
             android:title="New Folder" />
         <item
             android:id="@+id/toolbarPaste"
-            android:title="@android:string/paste"
+            android:title="Paste"
             app:showAsAction="never" />
         <item
             android:id="@+id/toolbarChangePath"
@@ -35,15 +35,15 @@
         android:visible="false">
         <item
             android:id="@+id/toolbarSelectAll"
-            android:title="@android:string/selectAll"
+            android:title="Select All"
             app:showAsAction="never" />
         <item
             android:id="@+id/toolbarCopy2"
-            android:title="@android:string/copy"
+            android:title="Copy"
             app:showAsAction="never" />
         <item
             android:id="@+id/toolbarCut2"
-            android:title="@android:string/cut"
+            android:title="Cut"
             app:showAsAction="never" />
         <item
             android:id="@+id/toolbarRename"
