@@ -1,6 +1,5 @@
-package com.stae.staefilemanager;
+package com.staecorp.staefilemanager;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 

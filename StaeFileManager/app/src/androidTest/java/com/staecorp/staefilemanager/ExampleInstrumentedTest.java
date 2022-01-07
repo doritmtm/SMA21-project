@@ -1,4 +1,4 @@
-package com.stae.staefilemanager;
+package com.staecorp.staefilemanager;
 
 import android.content.Context;
 

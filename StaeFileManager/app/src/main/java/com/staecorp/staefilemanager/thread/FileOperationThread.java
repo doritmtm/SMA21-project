@@ -1,7 +1,7 @@
-package com.stae.staefilemanager.thread;
+package com.staecorp.staefilemanager.thread;
 
-import com.stae.staefilemanager.AppState;
-import com.stae.staefilemanager.FileManagerActivity;
+import com.staecorp.staefilemanager.AppState;
+import com.staecorp.staefilemanager.FileManagerActivity;
 
 import org.apache.commons.io.FileUtils;
 

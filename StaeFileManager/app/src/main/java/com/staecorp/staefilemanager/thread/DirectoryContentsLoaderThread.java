@@ -1,16 +1,13 @@
-package com.stae.staefilemanager.thread;
-
-import android.util.Log;
+package com.staecorp.staefilemanager.thread;
 
 import androidx.appcompat.content.res.AppCompatResources;
 
-import com.stae.staefilemanager.AppState;
-import com.stae.staefilemanager.R;
-import com.stae.staefilemanager.model.FileItem;
+import com.staecorp.staefilemanager.AppState;
+import com.staecorp.staefilemanager.R;
+import com.staecorp.staefilemanager.model.FileItem;
 
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DirectoryContentsLoaderThread extends Thread {

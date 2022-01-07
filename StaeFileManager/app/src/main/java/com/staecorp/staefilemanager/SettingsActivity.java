@@ -1,4 +1,4 @@
-package com.stae.staefilemanager;
+package com.staecorp.staefilemanager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;

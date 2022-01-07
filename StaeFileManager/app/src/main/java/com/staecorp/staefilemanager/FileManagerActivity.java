@@ -1,4 +1,4 @@
-package com.stae.staefilemanager;
+package com.staecorp.staefilemanager;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -26,17 +26,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.common.io.Files;
-import com.stae.staefilemanager.adapter.FileRecyclerViewAdapter;
-import com.stae.staefilemanager.adapter.StorageDeviceRecyclerViewAdapter;
-import com.stae.staefilemanager.model.FileItem;
-import com.stae.staefilemanager.model.StorageDeviceItem;
-import com.stae.staefilemanager.thread.DirectoryContentsLoaderThread;
-import com.stae.staefilemanager.thread.FileOperationThread;
-import com.stae.staefilemanager.ui.CustomRecyclerView;
+import com.staecorp.staefilemanager.adapter.FileRecyclerViewAdapter;
+import com.staecorp.staefilemanager.adapter.StorageDeviceRecyclerViewAdapter;
+import com.staecorp.staefilemanager.model.FileItem;
+import com.staecorp.staefilemanager.model.StorageDeviceItem;
+import com.staecorp.staefilemanager.thread.DirectoryContentsLoaderThread;
+import com.staecorp.staefilemanager.thread.FileOperationThread;
+import com.staecorp.staefilemanager.ui.CustomRecyclerView;
 
 import org.apache.commons.io.FileUtils;
 
@@ -204,10 +203,13 @@ public class FileManagerActivity extends AppCompatActivity {
 
     public class ToolbarSelectionMenuListener implements Toolbar.OnMenuItemClickListener
     {
-
         @Override
         public boolean onMenuItemClick(MenuItem item) {
             AlertDialog dialog;
+            EditText filenameInput;
+            TextView filenameText;
+            View view;
+            EditText dialogChangePathInput;
             switch(item.getItemId())
             {
                 case R.id.toolbarSelectAll:
@@ -220,6 +222,51 @@ public class FileManagerActivity extends AppCompatActivity {
                 case R.id.toolbarCut2:
                     memorizeFilesSelected();
                     fileOperation=FileOperations.CUT;
+                    break;
+                case R.id.toolbarRename:
+                    memorizeFilesSelected();
+                    File selected=filesSelected.get(0);
+                    view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_rename,null);
+                    filenameInput=view.findViewById(R.id.dialogChangePathInput);
+                    filenameText=view.findViewById(R.id.dialogChangePathText);
+                    filenameInput.setText(selected.getName());
+                    dialog=new AlertDialog.Builder(FileManagerActivity.this).setTitle("Rename item:")
+                            .setPositiveButton("Rename", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    try {
+                                        //FileUtils.copyFile(selected,new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        //FileUtils.forceDelete(selected);
+                                        //selected.renameTo();
+                                        Files.move(selected,new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        onBackPressed();
+                                        loadDirectoryContentsAndUpdateUI(currentDir);
+                                    } catch (IOException e) {
+                                        showErrorDialog(e.getMessage());
+                                        e.printStackTrace();
+                                    }
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            })
+                            .setView(view)
+                            .create();
+                    if(selected.isDirectory())
+                    {
+                        filenameText.setText("Change name for folder "+selected.getName()+":");
+                        dialog.setTitle("Rename folder:");
+                    }
+                    else
+                    {
+                        filenameText.setText("Change name for file "+selected.getName()+":");
+                        dialog.setTitle("Rename file:");
+                    }
+                    currentDialog=dialog;
+                    dialog.show();
                     break;
                 case R.id.toolbarDelete2:
                     memorizeFilesSelected();
@@ -239,9 +286,9 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     fileOperation=FileOperations.DELETE;
+                                    onBackPressed();
                                     performFileOperation();
                                     fileOperation=FileOperations.NOOP;
-                                    onBackPressed();
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
