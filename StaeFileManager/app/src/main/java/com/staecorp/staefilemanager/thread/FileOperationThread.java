@@ -1,5 +1,6 @@
 package com.staecorp.staefilemanager.thread;
 
+import com.google.common.net.UrlEscapers;
 import com.staecorp.staefilemanager.AppState;
 import com.staecorp.staefilemanager.FileManagerActivity;
 
@@ -29,11 +30,11 @@ public class FileOperationThread extends Thread {
                 {
                     if (f.isDirectory())
                     {
-                        FileUtils.copyDirectory(f, new File(currentDir.resolve(f.getName())));
+                        FileUtils.copyDirectory(f, new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
                     }
                     else
                     {
-                        FileUtils.copyFile(f, new File(currentDir.resolve(f.getName())));
+                        FileUtils.copyFile(f, new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
                     }
                 }
             }
@@ -43,12 +44,12 @@ public class FileOperationThread extends Thread {
                 {
                     if (f.isDirectory())
                     {
-                        FileUtils.copyDirectory(f, new File(currentDir.resolve(f.getName())));
+                        FileUtils.copyDirectory(f, new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
                         FileUtils.deleteDirectory(f);
                     }
                     else
                     {
-                        FileUtils.copyFile(f, new File(currentDir.resolve(f.getName())));
+                        FileUtils.copyFile(f, new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
                         FileUtils.forceDelete(f);
                     }
                 }

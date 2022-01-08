@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.StatFs;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +30,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.common.io.Files;
+import com.google.common.net.UrlEscapers;
 import com.staecorp.staefilemanager.adapter.FileRecyclerViewAdapter;
 import com.staecorp.staefilemanager.adapter.StorageDeviceRecyclerViewAdapter;
 import com.staecorp.staefilemanager.model.FileItem;
@@ -43,6 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -96,7 +101,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        FileUtils.touch(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        FileUtils.touch(new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(filenameInput.getText().toString()))));
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
                                         showErrorDialog(e.getMessage());
@@ -125,7 +130,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        FileUtils.forceMkdir(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        FileUtils.forceMkdir(new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(filenameInput.getText().toString()))));
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
                                         showErrorDialog(e.getMessage());
@@ -157,7 +162,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        currentDir=new URI("file:"+dialogChangePathInput.getText().toString());
+                                        currentDir=new URI("file:"+UrlEscapers.urlPathSegmentEscaper().escape(dialogChangePathInput.getText().toString()));
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                         removeAllBackCallbacks();
                                     } catch (URISyntaxException e) {
@@ -242,7 +247,15 @@ public class FileManagerActivity extends AppCompatActivity {
                                         //FileUtils.copyFile(selected,new File(currentDir.resolve(filenameInput.getText().toString())));
                                         //FileUtils.forceDelete(selected);
                                         //selected.renameTo();
-                                        Files.move(selected,new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        //currentDir.resolve(currentDir);
+                                        //Uri.encode("");
+                                        URI renamed=currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(filenameInput.getText().toString()));
+                                        //URI renamed=currentDir.resolve(URLEncoder.encode(filenameInput.getText().toString(),StandardCharsets.ISO_8859_1.toString()));
+                                        //URI renamed=currentDir.resolve("TEST%2035.rxr");
+                                        if(!selected.toURI().equals(renamed))
+                                        {
+                                            Files.move(selected, new File(renamed));
+                                        }
                                         onBackPressed();
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
@@ -484,26 +497,6 @@ public class FileManagerActivity extends AppCompatActivity {
         }
     }
 
-    private FileItem createFileItem(File file)
-    {
-        FileItem fileItem=new FileItem(file.getName());
-        fileItem.setUri(file.toURI());
-
-        if(file.getParentFile()!=null)
-        {
-            fileItem.setParentURI(file.getParentFile().toURI());
-        }
-        if(file.isDirectory())
-        {
-            fileItem.setIcon(AppCompatResources.getDrawable(this,R.drawable.folder));
-        }
-        else
-        {
-            fileItem.setIcon(AppCompatResources.getDrawable(this,R.drawable.file));
-        }
-        return fileItem;
-    }
-
     private void performFileOperation()
     {
         if(fileOperationThread!=null)
@@ -570,12 +563,6 @@ public class FileManagerActivity extends AppCompatActivity {
         sdi.setFreeBytes(statFs.getAvailableBytes());
         sdi.setTotalBytes(statFs.getTotalBytes());
         sdi.setUsedBytes(sdi.getTotalBytes()-sdi.getFreeBytes());
-        //sdi.setFreeGB("free\n"+String.format("%,.2f",(double)sdi.getFreeBytes()/1073741824.0)+" GB");
-        //sdi.setTotalGB("total\n"+String.format("%,.2f",(double)sdi.getTotalBytes()/1073741824.0)+" GB");
-        //sdi.setUsedGB("used\n"+String.format("%,.2f",(double)sdi.getUsedBytes()/1073741824.0)+" GB");
-        //sdi.setFreeGB("free\n"+FileUtils.byteCountToDisplaySize(sdi.getFreeBytes()));
-        //sdi.setTotalGB("total\n"+FileUtils.byteCountToDisplaySize(sdi.getTotalBytes()));
-        //sdi.setUsedGB("used\n"+FileUtils.byteCountToDisplaySize(sdi.getUsedBytes()));
         sdi.setFreeGB("free\n"+AppState.filesizeDisplayString(sdi.getFreeBytes()));
         sdi.setTotalGB("total\n"+AppState.filesizeDisplayString(sdi.getTotalBytes()));
         sdi.setUsedGB("used\n"+AppState.filesizeDisplayString(sdi.getUsedBytes()));
