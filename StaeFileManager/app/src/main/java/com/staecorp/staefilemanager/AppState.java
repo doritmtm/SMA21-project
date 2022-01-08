@@ -3,6 +3,8 @@ package com.staecorp.staefilemanager;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.common.net.UrlEscapers;
+
 import java.net.URI;
 
 public class AppState {
@@ -105,5 +107,17 @@ public class AppState {
 
     public void setSomethingInClipboard(boolean somethingInClipboard) {
         this.somethingInClipboard = somethingInClipboard;
+    }
+
+    public static String escapePath(String path)
+    {
+        String[] fragments=path.split("/");
+        String result="";
+        for(String f:fragments)
+        {
+            f=UrlEscapers.urlPathSegmentEscaper().escape(f);
+            result+=f+"/";
+        }
+        return result;
     }
 }

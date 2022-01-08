@@ -164,7 +164,9 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        currentDir=new URI("file:"+UrlEscapers.urlPathSegmentEscaper().escape(dialogChangePathInput.getText().toString()));
+                                        Log.d("MYAPPP","file:"+UrlEscapers.urlPathSegmentEscaper().escape(dialogChangePathInput.getText().toString()));
+                                        Log.d("MYAPPPBUN","file:"+AppState.escapePath(dialogChangePathInput.getText().toString()));
+                                        currentDir=new URI("file:"+AppState.escapePath(dialogChangePathInput.getText().toString()));
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                         removeAllBackCallbacks();
                                     } catch (URISyntaxException e) {
@@ -273,12 +275,12 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
+                                        onBackPressed();
                                         URI renamed=currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(filenameInput.getText().toString()));
                                         if(!selected.toURI().equals(renamed))
                                         {
                                             Files.move(selected, new File(renamed));
                                         }
-                                        onBackPressed();
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
                                         showErrorDialog(e.getMessage());
