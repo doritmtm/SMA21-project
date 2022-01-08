@@ -1,5 +1,6 @@
 package com.staecorp.staefilemanager.thread;
 
+import com.google.common.io.Files;
 import com.google.common.net.UrlEscapers;
 import com.staecorp.staefilemanager.AppState;
 import com.staecorp.staefilemanager.FileManagerActivity;
@@ -42,16 +43,7 @@ public class FileOperationThread extends Thread {
             {
                 for (File f : filesSelected)
                 {
-                    if (f.isDirectory())
-                    {
-                        FileUtils.copyDirectory(f, new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
-                        FileUtils.deleteDirectory(f);
-                    }
-                    else
-                    {
-                        FileUtils.copyFile(f, new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
-                        FileUtils.forceDelete(f);
-                    }
+                    Files.move(f,new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
                 }
             }
             if (fileOperation == FileManagerActivity.FileOperations.DELETE)
