@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.staecorp.staefilemanager.AppState;
 import com.staecorp.staefilemanager.FileManagerActivity;
 import com.staecorp.staefilemanager.R;
 import com.staecorp.staefilemanager.model.FileItem;
@@ -75,16 +76,13 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                     if(!selectionMode) {
                         selectionMode = true;
                         nrSelected=0;
-                        changeSelection();
+                        //changeSelection();
                         toolbar.setTitle(nrSelected+" items selected");
                         //toolbar.getMenu().clear();
                         //toolbar.inflateMenu(R.menu.toolbar_selection_menu);
                         toolbar.getMenu().setGroupVisible(R.id.selectionGroup,true);
                         toolbar.getMenu().setGroupVisible(R.id.mainGroup,false);
                         toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarSelectionMenuListener());
-                        fileRecyclerView.setLocked(true);
-                        fileRecyclerView.setSelectionMode(true);
-                        fileRecyclerView.setCurrentChildInFocus(itemView);
                         fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
                             @Override
                             public void handleOnBackPressed() {
@@ -93,6 +91,10 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                             }
                         });
                     }
+                    changeSelection();
+                    fileRecyclerView.setLocked(true);
+                    fileRecyclerView.setSelectionMode(true);
+                    fileRecyclerView.setCurrentChildInFocus(itemView);
                     return true;
                 }
             });
@@ -187,6 +189,10 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         //toolbar.getMenu().clear();
         toolbar.getMenu().setGroupVisible(R.id.selectionGroup,false);
         toolbar.getMenu().setGroupVisible(R.id.mainGroup,true);
+        if(!AppState.instance().isSomethingInClipboard())
+        {
+            toolbar.getMenu().findItem(R.id.toolbarPaste).setVisible(false);
+        }
         //toolbar.getMenu().removeGroup();
         //toolbar.inflateMenu(R.menu.toolbar_menu);
         toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarMenuListener());

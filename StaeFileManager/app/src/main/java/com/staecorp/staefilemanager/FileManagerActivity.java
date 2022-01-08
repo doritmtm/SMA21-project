@@ -50,6 +50,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class FileManagerActivity extends AppCompatActivity {
@@ -200,6 +202,15 @@ public class FileManagerActivity extends AppCompatActivity {
                     break;
                 case  R.id.toolbarPaste:
                     performFileOperation();
+                    AppState.instance().setSomethingInClipboard(false);
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(() -> {
+                                toolbar.getMenu().findItem(R.id.toolbarPaste).setVisible(false);
+                            });
+                        }
+                    },300);
                     break;
                 case R.id.toolbarSettings:
                     Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
@@ -227,10 +238,28 @@ public class FileManagerActivity extends AppCompatActivity {
                 case R.id.toolbarCopy2:
                     memorizeFilesSelected();
                     fileOperation=FileOperations.COPY;
+                    AppState.instance().setSomethingInClipboard(true);
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(() ->{
+                                onBackPressed();
+                            });
+                        }
+                    },300);
                     break;
                 case R.id.toolbarCut2:
                     memorizeFilesSelected();
                     fileOperation=FileOperations.CUT;
+                    AppState.instance().setSomethingInClipboard(true);
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(() ->{
+                                onBackPressed();
+                            });
+                        }
+                    },300);
                     break;
                 case R.id.toolbarRename:
                     memorizeFilesSelected();

@@ -12,6 +12,7 @@ public class AppState {
     private FileManagerActivity fileManagerActivity;
     private URI currentDir;
     private FileManagerActivity.SortModes sortMode=FileManagerActivity.SortModes.NAME;
+    private boolean somethingInClipboard=false;
     public AppState()
     {
         preferences=context.getSharedPreferences("StaeFileManagerPref",Context.MODE_PRIVATE);
@@ -96,5 +97,13 @@ public class AppState {
             case "SIZE": return FileManagerActivity.SortModes.SIZE;
         }
         return FileManagerActivity.SortModes.NOOP;
+    }
+
+    public boolean isSomethingInClipboard() {
+        return somethingInClipboard;
+    }
+
+    public void setSomethingInClipboard(boolean somethingInClipboard) {
+        this.somethingInClipboard = somethingInClipboard;
     }
 }
