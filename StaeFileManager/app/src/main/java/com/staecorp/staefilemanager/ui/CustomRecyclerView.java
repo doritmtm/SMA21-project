@@ -58,6 +58,8 @@ public class CustomRecyclerView extends RecyclerView {
         if(ev.getAction()==MotionEvent.ACTION_UP)
         {
             currentChildInFocus=null;
+            locked=false;
+            selectionMode=false;
             scrollThread.shouldStop();
         }
         if(locked)

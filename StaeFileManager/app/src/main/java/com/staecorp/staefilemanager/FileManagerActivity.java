@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.StatFs;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +30,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.common.io.Files;
+import com.google.common.net.UrlEscapers;
 import com.staecorp.staefilemanager.adapter.FileRecyclerViewAdapter;
 import com.staecorp.staefilemanager.adapter.StorageDeviceRecyclerViewAdapter;
 import com.staecorp.staefilemanager.model.FileItem;
@@ -43,8 +45,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class FileManagerActivity extends AppCompatActivity {
@@ -96,7 +103,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        FileUtils.touch(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        FileUtils.touch(new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(filenameInput.getText().toString()))));
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
                                         showErrorDialog(e.getMessage());
@@ -125,7 +132,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        FileUtils.forceMkdir(new File(currentDir.resolve(filenameInput.getText().toString())));
+                                        FileUtils.forceMkdir(new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(filenameInput.getText().toString()))));
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
                                         showErrorDialog(e.getMessage());
@@ -157,7 +164,9 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        currentDir=new URI("file:"+dialogChangePathInput.getText().toString());
+                                        Log.d("MYAPPP","file:"+UrlEscapers.urlPathSegmentEscaper().escape(dialogChangePathInput.getText().toString()));
+                                        Log.d("MYAPPPBUN","file:"+AppState.escapePath(dialogChangePathInput.getText().toString()));
+                                        currentDir=new URI("file:"+AppState.escapePath(dialogChangePathInput.getText().toString()));
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                         removeAllBackCallbacks();
                                     } catch (URISyntaxException e) {
@@ -195,6 +204,15 @@ public class FileManagerActivity extends AppCompatActivity {
                     break;
                 case  R.id.toolbarPaste:
                     performFileOperation();
+                    AppState.instance().setSomethingInClipboard(false);
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(() -> {
+                                toolbar.getMenu().findItem(R.id.toolbarPaste).setVisible(false);
+                            });
+                        }
+                    },300);
                     break;
                 case R.id.toolbarSettings:
                     Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
@@ -222,10 +240,28 @@ public class FileManagerActivity extends AppCompatActivity {
                 case R.id.toolbarCopy2:
                     memorizeFilesSelected();
                     fileOperation=FileOperations.COPY;
+                    AppState.instance().setSomethingInClipboard(true);
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(() ->{
+                                onBackPressed();
+                            });
+                        }
+                    },300);
                     break;
                 case R.id.toolbarCut2:
                     memorizeFilesSelected();
                     fileOperation=FileOperations.CUT;
+                    AppState.instance().setSomethingInClipboard(true);
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(() ->{
+                                onBackPressed();
+                            });
+                        }
+                    },300);
                     break;
                 case R.id.toolbarRename:
                     memorizeFilesSelected();
@@ -239,11 +275,12 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        //FileUtils.copyFile(selected,new File(currentDir.resolve(filenameInput.getText().toString())));
-                                        //FileUtils.forceDelete(selected);
-                                        //selected.renameTo();
-                                        Files.move(selected,new File(currentDir.resolve(filenameInput.getText().toString())));
                                         onBackPressed();
+                                        URI renamed=currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(filenameInput.getText().toString()));
+                                        if(!selected.toURI().equals(renamed))
+                                        {
+                                            Files.move(selected, new File(renamed));
+                                        }
                                         loadDirectoryContentsAndUpdateUI(currentDir);
                                     } catch (IOException e) {
                                         showErrorDialog(e.getMessage());
@@ -348,7 +385,6 @@ public class FileManagerActivity extends AppCompatActivity {
             }
         });
         toolbar=findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
         toolbar.getMenu().clear();
         toolbar.inflateMenu(R.menu.toolbar_menu);
         toolbar.setOnMenuItemClickListener(new ToolbarMenuListener());
@@ -484,26 +520,6 @@ public class FileManagerActivity extends AppCompatActivity {
         }
     }
 
-    private FileItem createFileItem(File file)
-    {
-        FileItem fileItem=new FileItem(file.getName());
-        fileItem.setUri(file.toURI());
-
-        if(file.getParentFile()!=null)
-        {
-            fileItem.setParentURI(file.getParentFile().toURI());
-        }
-        if(file.isDirectory())
-        {
-            fileItem.setIcon(AppCompatResources.getDrawable(this,R.drawable.folder));
-        }
-        else
-        {
-            fileItem.setIcon(AppCompatResources.getDrawable(this,R.drawable.file));
-        }
-        return fileItem;
-    }
-
     private void performFileOperation()
     {
         if(fileOperationThread!=null)
@@ -570,12 +586,6 @@ public class FileManagerActivity extends AppCompatActivity {
         sdi.setFreeBytes(statFs.getAvailableBytes());
         sdi.setTotalBytes(statFs.getTotalBytes());
         sdi.setUsedBytes(sdi.getTotalBytes()-sdi.getFreeBytes());
-        //sdi.setFreeGB("free\n"+String.format("%,.2f",(double)sdi.getFreeBytes()/1073741824.0)+" GB");
-        //sdi.setTotalGB("total\n"+String.format("%,.2f",(double)sdi.getTotalBytes()/1073741824.0)+" GB");
-        //sdi.setUsedGB("used\n"+String.format("%,.2f",(double)sdi.getUsedBytes()/1073741824.0)+" GB");
-        //sdi.setFreeGB("free\n"+FileUtils.byteCountToDisplaySize(sdi.getFreeBytes()));
-        //sdi.setTotalGB("total\n"+FileUtils.byteCountToDisplaySize(sdi.getTotalBytes()));
-        //sdi.setUsedGB("used\n"+FileUtils.byteCountToDisplaySize(sdi.getUsedBytes()));
         sdi.setFreeGB("free\n"+AppState.filesizeDisplayString(sdi.getFreeBytes()));
         sdi.setTotalGB("total\n"+AppState.filesizeDisplayString(sdi.getTotalBytes()));
         sdi.setUsedGB("used\n"+AppState.filesizeDisplayString(sdi.getUsedBytes()));
@@ -615,4 +625,8 @@ public class FileManagerActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    public void showProgressMessage(String message)
+    {
+        toolbar.setSubtitle(message);
+    }
 }

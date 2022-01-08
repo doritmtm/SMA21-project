@@ -38,6 +38,12 @@ public class DirectoryContentsLoaderThread extends Thread {
     @Override
     public void run() {
         super.run();
+        if(shouldUpdateUI)
+        {
+            AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
+                AppState.instance().getFileManagerActivity().showProgressMessage("Processing...");
+            });
+        }
         File file=new File(uri);
         FileItem fileItem;
         if(file.canRead())

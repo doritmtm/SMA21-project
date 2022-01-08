@@ -3,6 +3,8 @@ package com.staecorp.staefilemanager;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.common.net.UrlEscapers;
+
 import java.net.URI;
 
 public class AppState {
@@ -12,6 +14,7 @@ public class AppState {
     private FileManagerActivity fileManagerActivity;
     private URI currentDir;
     private FileManagerActivity.SortModes sortMode=FileManagerActivity.SortModes.NAME;
+    private boolean somethingInClipboard=false;
     public AppState()
     {
         preferences=context.getSharedPreferences("StaeFileManagerPref",Context.MODE_PRIVATE);
@@ -96,5 +99,25 @@ public class AppState {
             case "SIZE": return FileManagerActivity.SortModes.SIZE;
         }
         return FileManagerActivity.SortModes.NOOP;
+    }
+
+    public boolean isSomethingInClipboard() {
+        return somethingInClipboard;
+    }
+
+    public void setSomethingInClipboard(boolean somethingInClipboard) {
+        this.somethingInClipboard = somethingInClipboard;
+    }
+
+    public static String escapePath(String path)
+    {
+        String[] fragments=path.split("/");
+        String result="";
+        for(String f:fragments)
+        {
+            f=UrlEscapers.urlPathSegmentEscaper().escape(f);
+            result+=f+"/";
+        }
+        return result;
     }
 }

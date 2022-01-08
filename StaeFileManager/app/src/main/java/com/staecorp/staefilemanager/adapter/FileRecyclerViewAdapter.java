@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.staecorp.staefilemanager.AppState;
 import com.staecorp.staefilemanager.FileManagerActivity;
 import com.staecorp.staefilemanager.R;
 import com.staecorp.staefilemanager.model.FileItem;
@@ -48,24 +49,19 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(!selectionMode)
+                    if(!toolbar.getSubtitle().equals("Processing..."))
                     {
-                        if (new File(fileItem.getUri()).isDirectory()) {
-                            fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
-                            /*fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
-                                @Override
-                                public void handleOnBackPressed() {
-                                    if (fileItem.getParentURI() != null) {
-                                        fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getParentURI());
-                                        remove();
-                                    }
-                                }
-                            });*/
+                        if (!selectionMode)
+                        {
+                            if (new File(fileItem.getUri()).isDirectory())
+                            {
+                                fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
+                            }
                         }
-                    }
-                    else
-                    {
-                        changeSelection();
+                        else
+                        {
+                            changeSelection();
+                        }
                     }
                 }
             });
@@ -75,16 +71,10 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                     if(!selectionMode) {
                         selectionMode = true;
                         nrSelected=0;
-                        changeSelection();
                         toolbar.setTitle(nrSelected+" items selected");
-                        //toolbar.getMenu().clear();
-                        //toolbar.inflateMenu(R.menu.toolbar_selection_menu);
                         toolbar.getMenu().setGroupVisible(R.id.selectionGroup,true);
                         toolbar.getMenu().setGroupVisible(R.id.mainGroup,false);
                         toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarSelectionMenuListener());
-                        fileRecyclerView.setLocked(true);
-                        fileRecyclerView.setSelectionMode(true);
-                        fileRecyclerView.setCurrentChildInFocus(itemView);
                         fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
                             @Override
                             public void handleOnBackPressed() {
@@ -93,6 +83,10 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                             }
                         });
                     }
+                    changeSelection();
+                    fileRecyclerView.setLocked(true);
+                    fileRecyclerView.setSelectionMode(true);
+                    fileRecyclerView.setCurrentChildInFocus(itemView);
                     return true;
                 }
             });
@@ -184,11 +178,12 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         fileRecyclerView.setSelectionMode(false);
         selectionMode = false;
         toolbar.setTitle(R.string.app_name);
-        //toolbar.getMenu().clear();
         toolbar.getMenu().setGroupVisible(R.id.selectionGroup,false);
         toolbar.getMenu().setGroupVisible(R.id.mainGroup,true);
-        //toolbar.getMenu().removeGroup();
-        //toolbar.inflateMenu(R.menu.toolbar_menu);
+        if(!AppState.instance().isSomethingInClipboard())
+        {
+            toolbar.getMenu().findItem(R.id.toolbarPaste).setVisible(false);
+        }
         toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarMenuListener());
     }
 
