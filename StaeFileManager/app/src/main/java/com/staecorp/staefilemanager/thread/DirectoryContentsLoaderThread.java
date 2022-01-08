@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class DirectoryContentsLoaderThread extends Thread {
     private URI uri;
@@ -124,115 +125,102 @@ public class DirectoryContentsLoaderThread extends Thread {
 
     private void sortFileItems()
     {
-        switch(sortMode)
-        {
-            case NAME:
-                Collections.sort(fileItemsArray,(fi1,fi2)->{
-                    File fi1File,fi2File;
-                    fi1File=new File(fi1.getUri());
-                    fi2File=new File(fi2.getUri());
-                    if(fi1File.isDirectory() && fi2File.isDirectory())
-                    {
-                        return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
-                    }
-                    if(fi1File.isFile() && fi2File.isFile())
-                    {
-                        return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
-                    }
-                    if(fi1File.isDirectory() && fi2File.isFile())
-                    {
-                        return -1;
-                    }
-                    if(fi1File.isFile() && fi2File.isDirectory())
-                    {
-                        return 1;
-                    }
-                    return 0;
-                });
-                break;
-            case DATE:
-                Collections.sort(fileItemsArray,(fi1,fi2)->{
-                    File fi1File,fi2File;
-                    fi1File=new File(fi1.getUri());
-                    fi2File=new File(fi2.getUri());
-                    if(fi1File.isDirectory() && fi2File.isDirectory())
-                    {
-                        if(fi1File.lastModified()-fi2File.lastModified()<0)
-                        {
-                            return 1;
+        List<FileItem> tempFileItemArray=new ArrayList<FileItem>();
+        tempFileItemArray.addAll(fileItemsArray);
+        try {
+            switch (sortMode) {
+                case NAME:
+                    Collections.sort(tempFileItemArray, (fi1, fi2) -> {
+                        File fi1File, fi2File;
+                        fi1File = new File(fi1.getUri());
+                        fi2File = new File(fi2.getUri());
+                        if (fi1File.isDirectory() && fi2File.isDirectory()) {
+                            return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
                         }
-                        if(fi1File.lastModified()-fi2File.lastModified()==0)
-                        {
-                            return 0;
+                        if (fi1File.isFile() && fi2File.isFile()) {
+                            return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
                         }
-                        if(fi1File.lastModified()-fi2File.lastModified()>0)
-                        {
+                        if (fi1File.isDirectory() && fi2File.isFile()) {
                             return -1;
                         }
-                    }
-                    if(fi1File.isFile() && fi2File.isFile())
-                    {
-                        if(fi1File.lastModified()-fi2File.lastModified()<0)
-                        {
+                        if (fi1File.isFile() && fi2File.isDirectory()) {
                             return 1;
                         }
-                        if(fi1File.lastModified()-fi2File.lastModified()==0)
-                        {
-                            return 0;
+                        return 0;
+                    });
+                    break;
+                case DATE:
+                    Collections.sort(tempFileItemArray, (fi1, fi2) -> {
+                        File fi1File, fi2File;
+                        fi1File = new File(fi1.getUri());
+                        fi2File = new File(fi2.getUri());
+                        if (fi1File.isDirectory() && fi2File.isDirectory()) {
+                            if (fi1File.lastModified() - fi2File.lastModified() < 0) {
+                                return 1;
+                            }
+                            if (fi1File.lastModified() - fi2File.lastModified() == 0) {
+                                return 0;
+                            }
+                            if (fi1File.lastModified() - fi2File.lastModified() > 0) {
+                                return -1;
+                            }
                         }
-                        if(fi1File.lastModified()-fi2File.lastModified()>0)
-                        {
+                        if (fi1File.isFile() && fi2File.isFile()) {
+                            if (fi1File.lastModified() - fi2File.lastModified() < 0) {
+                                return 1;
+                            }
+                            if (fi1File.lastModified() - fi2File.lastModified() == 0) {
+                                return 0;
+                            }
+                            if (fi1File.lastModified() - fi2File.lastModified() > 0) {
+                                return -1;
+                            }
+                        }
+                        if (fi1File.isDirectory() && fi2File.isFile()) {
                             return -1;
                         }
-                    }
-                    if(fi1File.isDirectory() && fi2File.isFile())
-                    {
-                        return -1;
-                    }
-                    if(fi1File.isFile() && fi2File.isDirectory())
-                    {
-                        return 1;
-                    }
-                    return 0;
-                });
-                break;
-            case SIZE:
-                Collections.sort(fileItemsArray,(fi1,fi2)->{
-                    File fi1File,fi2File;
-                    fi1File=new File(fi1.getUri());
-                    fi2File=new File(fi2.getUri());
-                    if(fi1File.isDirectory() && fi2File.isDirectory())
-                    {
-                        return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
-                    }
-                    if(fi1File.isFile() && fi2File.isFile())
-                    {
-                        if(fi1File.length()-fi2File.length()<0)
-                        {
+                        if (fi1File.isFile() && fi2File.isDirectory()) {
                             return 1;
                         }
-                        if(fi1File.length()-fi2File.length()==0)
-                        {
-                            return 0;
+                        return 0;
+                    });
+                    break;
+                case SIZE:
+                    Collections.sort(tempFileItemArray, (fi1, fi2) -> {
+                        File fi1File, fi2File;
+                        fi1File = new File(fi1.getUri());
+                        fi2File = new File(fi2.getUri());
+                        if (fi1File.isDirectory() && fi2File.isDirectory()) {
+                            return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
                         }
-                        if(fi1File.length()-fi2File.length()>0)
-                        {
+                        if (fi1File.isFile() && fi2File.isFile()) {
+                            if (fi1File.length() - fi2File.length() < 0) {
+                                return 1;
+                            }
+                            if (fi1File.length() - fi2File.length() == 0) {
+                                return 0;
+                            }
+                            if (fi1File.length() - fi2File.length() > 0) {
+                                return -1;
+                            }
+                        }
+                        if (fi1File.isDirectory() && fi2File.isFile()) {
                             return -1;
                         }
-                    }
-                    if(fi1File.isDirectory() && fi2File.isFile())
-                    {
-                        return -1;
-                    }
-                    if(fi1File.isFile() && fi2File.isDirectory())
-                    {
-                        return 1;
-                    }
-                    Log.d("MYAPPP","REACHED HERE!!!");
-                    return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
-                });
-                break;
+                        if (fi1File.isFile() && fi2File.isDirectory()) {
+                            return 1;
+                        }
+                        return 0;
+                    });
+                    break;
+            }
         }
+        catch(IllegalArgumentException e)
+        {
+            e.printStackTrace();
+        }
+        fileItemsArray.clear();
+        fileItemsArray.addAll(tempFileItemArray);
     }
 
     public void shouldUpdateUI() {

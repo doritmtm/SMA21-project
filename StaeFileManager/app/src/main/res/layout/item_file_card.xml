@@ -33,20 +33,20 @@
 
             <TextView
                 android:id="@+id/fileNameText"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="55dp"
-                android:layout_weight="10"
+                android:layout_weight="5"
                 android:text="TextView" />
 
             <TextView
                 android:id="@+id/fileDetailsText"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginRight="20dp"
-                android:layout_weight="5"
+                android:layout_weight="3"
                 android:gravity="right"
                 android:text="127.56 KB"
                 android:textColor="?attr/detailTextColor"
