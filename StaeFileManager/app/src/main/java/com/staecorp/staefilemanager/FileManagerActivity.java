@@ -273,14 +273,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        //FileUtils.copyFile(selected,new File(currentDir.resolve(filenameInput.getText().toString())));
-                                        //FileUtils.forceDelete(selected);
-                                        //selected.renameTo();
-                                        //currentDir.resolve(currentDir);
-                                        //Uri.encode("");
                                         URI renamed=currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(filenameInput.getText().toString()));
-                                        //URI renamed=currentDir.resolve(URLEncoder.encode(filenameInput.getText().toString(),StandardCharsets.ISO_8859_1.toString()));
-                                        //URI renamed=currentDir.resolve("TEST%2035.rxr");
                                         if(!selected.toURI().equals(renamed))
                                         {
                                             Files.move(selected, new File(renamed));
@@ -390,7 +383,6 @@ public class FileManagerActivity extends AppCompatActivity {
             }
         });
         toolbar=findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
         toolbar.getMenu().clear();
         toolbar.inflateMenu(R.menu.toolbar_menu);
         toolbar.setOnMenuItemClickListener(new ToolbarMenuListener());

@@ -53,15 +53,6 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                     {
                         if (new File(fileItem.getUri()).isDirectory()) {
                             fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
-                            /*fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
-                                @Override
-                                public void handleOnBackPressed() {
-                                    if (fileItem.getParentURI() != null) {
-                                        fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getParentURI());
-                                        remove();
-                                    }
-                                }
-                            });*/
                         }
                     }
                     else
@@ -76,10 +67,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                     if(!selectionMode) {
                         selectionMode = true;
                         nrSelected=0;
-                        //changeSelection();
                         toolbar.setTitle(nrSelected+" items selected");
-                        //toolbar.getMenu().clear();
-                        //toolbar.inflateMenu(R.menu.toolbar_selection_menu);
                         toolbar.getMenu().setGroupVisible(R.id.selectionGroup,true);
                         toolbar.getMenu().setGroupVisible(R.id.mainGroup,false);
                         toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarSelectionMenuListener());
@@ -186,15 +174,12 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         fileRecyclerView.setSelectionMode(false);
         selectionMode = false;
         toolbar.setTitle(R.string.app_name);
-        //toolbar.getMenu().clear();
         toolbar.getMenu().setGroupVisible(R.id.selectionGroup,false);
         toolbar.getMenu().setGroupVisible(R.id.mainGroup,true);
         if(!AppState.instance().isSomethingInClipboard())
         {
             toolbar.getMenu().findItem(R.id.toolbarPaste).setVisible(false);
         }
-        //toolbar.getMenu().removeGroup();
-        //toolbar.inflateMenu(R.menu.toolbar_menu);
         toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarMenuListener());
     }
 
