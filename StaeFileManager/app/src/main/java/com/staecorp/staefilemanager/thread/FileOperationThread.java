@@ -23,6 +23,8 @@ public class FileOperationThread extends Thread {
     @Override
     public void run() {
         super.run();
+        int i=0;
+        showProgress(i);
         URI currentDir=AppState.instance().getCurrentDir();
         try {
             if (fileOperation == FileManagerActivity.FileOperations.COPY)
@@ -37,6 +39,8 @@ public class FileOperationThread extends Thread {
                     {
                         FileUtils.copyFile(f, new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
                     }
+                    i++;
+                    showProgress(i);
                 }
             }
             if (fileOperation == FileManagerActivity.FileOperations.CUT)
@@ -44,6 +48,8 @@ public class FileOperationThread extends Thread {
                 for (File f : filesSelected)
                 {
                     Files.move(f,new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
+                    i++;
+                    showProgress(i);
                 }
             }
             if (fileOperation == FileManagerActivity.FileOperations.DELETE)
@@ -58,6 +64,8 @@ public class FileOperationThread extends Thread {
                     {
                         FileUtils.forceDelete(f);
                     }
+                    i++;
+                    showProgress(i);
                 }
             }
             fileOperation=FileManagerActivity.FileOperations.NOOP;
@@ -80,6 +88,13 @@ public class FileOperationThread extends Thread {
 
     public void setFileOperation(FileManagerActivity.FileOperations fileOperation) {
         this.fileOperation = fileOperation;
+    }
+
+    private void showProgress(int i)
+    {
+        AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
+            AppState.instance().getFileManagerActivity().showProgressMessage("Processing ("+i+"/"+filesSelected.size()+")...");
+        });
     }
 
 }

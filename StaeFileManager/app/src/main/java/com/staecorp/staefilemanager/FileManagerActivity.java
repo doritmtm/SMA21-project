@@ -625,4 +625,8 @@ public class FileManagerActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    public void showProgressMessage(String message)
+    {
+        toolbar.setSubtitle(message);
+    }
 }

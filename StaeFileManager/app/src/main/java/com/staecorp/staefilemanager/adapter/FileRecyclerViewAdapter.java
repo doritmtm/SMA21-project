@@ -49,15 +49,19 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(!selectionMode)
+                    if(!toolbar.getSubtitle().equals("Processing..."))
                     {
-                        if (new File(fileItem.getUri()).isDirectory()) {
-                            fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
+                        if (!selectionMode)
+                        {
+                            if (new File(fileItem.getUri()).isDirectory())
+                            {
+                                fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
+                            }
                         }
-                    }
-                    else
-                    {
-                        changeSelection();
+                        else
+                        {
+                            changeSelection();
+                        }
                     }
                 }
             });
