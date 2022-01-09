@@ -71,7 +71,7 @@ public class DirectoryContentsLoaderThread extends Thread {
         else
         {
             AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
-                AppState.instance().getFileManagerActivity().showErrorDialog("Error opening path: Can not read current directory");
+                AppState.instance().getFileManagerActivity().showErrorDialog("Error opening path: Cannot read current directory");
             });
         }
         sortFileItems();
