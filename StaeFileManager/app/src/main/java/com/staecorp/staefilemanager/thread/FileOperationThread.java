@@ -1,5 +1,7 @@
 package com.staecorp.staefilemanager.thread;
 
+import android.util.Log;
+
 import com.google.common.io.Files;
 import com.google.common.net.UrlEscapers;
 import com.staecorp.staefilemanager.AppState;
@@ -10,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class FileOperationThread extends Thread {
@@ -25,8 +28,9 @@ public class FileOperationThread extends Thread {
         super.run();
         int i=0;
         showProgress(i);
-        URI currentDir=AppState.instance().getCurrentDir();
+        URI currentDir;
         try {
+            currentDir = new URI(AppState.instance().getCurrentDir().toString());
             if (fileOperation == FileManagerActivity.FileOperations.COPY)
             {
                 for (File f : filesSelected)
@@ -47,7 +51,11 @@ public class FileOperationThread extends Thread {
             {
                 for (File f : filesSelected)
                 {
-                    Files.move(f,new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName()))));
+                    File fmove=new File(currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(f.getName())));
+                    if(!f.equals(fmove))
+                    {
+                        Files.move(f, fmove);
+                    }
                     i++;
                     showProgress(i);
                 }
@@ -77,7 +85,11 @@ public class FileOperationThread extends Thread {
         {
             AppState.instance().getFileManagerActivity().runOnUiThread(() -> {
                 AppState.instance().getFileManagerActivity().showErrorDialog(e.getMessage());
+                AppState.instance().getFileManagerActivity().loadCurrentDirectoryContentsAndUpdateUI();
             });
+            e.printStackTrace();
+        }
+        catch (URISyntaxException e) {
             e.printStackTrace();
         }
     }
