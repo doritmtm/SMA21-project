@@ -1,16 +1,23 @@
 package com.staecorp.staefilemanager.adapter;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.common.io.Files;
 import com.staecorp.staefilemanager.AppState;
 import com.staecorp.staefilemanager.FileManagerActivity;
 import com.staecorp.staefilemanager.R;
@@ -56,6 +63,23 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
                         if (new File(fileItem.getUri()).isDirectory())
                         {
                             fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
+                        }
+                        else
+                        {
+                            Intent intent=new Intent(Intent.ACTION_VIEW);
+                            String mimetype= MimeTypeMap.getSingleton().getMimeTypeFromExtension(Files.getFileExtension(fileItem.getName()));
+                            intent.setDataAndType(FileProvider.getUriForFile(AppState.getContext(),AppState.getContext().getPackageName()+".provider",new File(fileItem.getUri())),mimetype);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                            try
+                            {
+                                AppState.getContext().startActivity(intent);
+                            }
+                            catch(ActivityNotFoundException e)
+                            {
+                                Toast.makeText(AppState.getContext(),"Cannot find an app to open this file",Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
                     else
