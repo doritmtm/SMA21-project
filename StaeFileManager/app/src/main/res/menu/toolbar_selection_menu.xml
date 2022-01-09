@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/toolbarSelectAll"
+        android:id="@+id/toolbarSelectAllSelection"
         android:title="@android:string/selectAll"
         app:showAsAction="never" />
     <item

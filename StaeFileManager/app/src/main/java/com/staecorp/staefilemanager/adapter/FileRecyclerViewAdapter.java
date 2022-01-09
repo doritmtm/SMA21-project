@@ -19,11 +19,13 @@ import com.staecorp.staefilemanager.ui.CustomRecyclerView;
 
 import java.io.File;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerViewAdapter.ViewHolder> {
     private List<FileItem> fileItemArray;
     private FileManagerActivity fileManagerActivity;
-    private boolean selectionMode=false;
+    private static boolean selectionMode=false;
     private CustomRecyclerView fileRecyclerView; //from FileManagerActivity
     private static int nrSelected=0;
     private Toolbar toolbar;
@@ -49,40 +51,23 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(!toolbar.getSubtitle().equals("Processing..."))
+                    if (!selectionMode)
                     {
-                        if (!selectionMode)
+                        if (new File(fileItem.getUri()).isDirectory())
                         {
-                            if (new File(fileItem.getUri()).isDirectory())
-                            {
-                                fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
-                            }
+                            fileManagerActivity.loadDirectoryContentsAndUpdateUI(fileItem.getUri());
                         }
-                        else
-                        {
-                            changeSelection();
-                        }
+                    }
+                    else
+                    {
+                        changeSelection();
                     }
                 }
             });
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if(!selectionMode) {
-                        selectionMode = true;
-                        nrSelected=0;
-                        toolbar.setTitle(nrSelected+" items selected");
-                        toolbar.getMenu().setGroupVisible(R.id.selectionGroup,true);
-                        toolbar.getMenu().setGroupVisible(R.id.mainGroup,false);
-                        toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarSelectionMenuListener());
-                        fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
-                            @Override
-                            public void handleOnBackPressed() {
-                                stopSelectionMode();
-                                remove();
-                            }
-                        });
-                    }
+                    startSelectionMode();
                     changeSelection();
                     fileRecyclerView.setLocked(true);
                     fileRecyclerView.setSelectionMode(true);
@@ -169,6 +154,32 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         notifyDataSetChanged();
         nrSelected=0;
         toolbar.setTitle(nrSelected+" items selected");
+    }
+
+    public void startSelectionMode()
+    {
+        if(!selectionMode) {
+            selectionMode = true;
+            nrSelected=0;
+            toolbar.setTitle(nrSelected+" items selected");
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    fileManagerActivity.runOnUiThread(() -> {
+                        toolbar.getMenu().setGroupVisible(R.id.selectionGroup,true);
+                        toolbar.getMenu().setGroupVisible(R.id.mainGroup,false);
+                        toolbar.setOnMenuItemClickListener(fileManagerActivity.new ToolbarSelectionMenuListener());
+                    });
+                }
+            },300);
+            fileManagerActivity.addBackCallback(new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    stopSelectionMode();
+                    remove();
+                }
+            });
+        }
     }
 
     public void stopSelectionMode()

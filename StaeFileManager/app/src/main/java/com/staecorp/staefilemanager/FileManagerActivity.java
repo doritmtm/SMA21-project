@@ -45,9 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -92,6 +89,10 @@ public class FileManagerActivity extends AppCompatActivity {
             {
                 case R.id.toolbarClose:
                     finish();
+                    break;
+                case R.id.toolbarSelectAllMain:
+                    fileItemAdapter.startSelectionMode();
+                    fileItemAdapter.checkEveryone();
                     break;
                 case R.id.toolbarNewFile:
                     view=LayoutInflater.from(FileManagerActivity.this).inflate(R.layout.dialog_create,null);
@@ -164,10 +165,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     try {
-                                        Log.d("MYAPPP","file:"+UrlEscapers.urlPathSegmentEscaper().escape(dialogChangePathInput.getText().toString()));
-                                        Log.d("MYAPPPBUN","file:"+AppState.escapePath(dialogChangePathInput.getText().toString()));
-                                        currentDir=new URI("file:"+AppState.escapePath(dialogChangePathInput.getText().toString()));
-                                        loadDirectoryContentsAndUpdateUI(currentDir);
+                                        loadDirectoryContentsAndUpdateUI(new URI("file:"+AppState.escapePath(dialogChangePathInput.getText().toString())));
                                         removeAllBackCallbacks();
                                     } catch (URISyntaxException e) {
                                         e.printStackTrace();
@@ -234,7 +232,7 @@ public class FileManagerActivity extends AppCompatActivity {
             EditText dialogChangePathInput;
             switch(item.getItemId())
             {
-                case R.id.toolbarSelectAll:
+                case R.id.toolbarSelectAllSelection:
                     fileItemAdapter.checkEveryone();
                     break;
                 case R.id.toolbarCopy2:
@@ -277,7 +275,7 @@ public class FileManagerActivity extends AppCompatActivity {
                                     try {
                                         onBackPressed();
                                         URI renamed=currentDir.resolve(UrlEscapers.urlPathSegmentEscaper().escape(filenameInput.getText().toString()));
-                                        if(!selected.toURI().equals(renamed))
+                                        if(!selected.equals(new File(renamed)))
                                         {
                                             Files.move(selected, new File(renamed));
                                         }
@@ -427,30 +425,16 @@ public class FileManagerActivity extends AppCompatActivity {
         }
     }
 
-    private List<FileItem> loadDirectoryContents(URI uri)
-    {
-        currentDir=uri;
-        AppState.instance().setCurrentDir(currentDir);
-        List<FileItem> fileItemsArray=new CopyOnWriteArrayList<>();
-        if(directoryContentsThread!=null)
-        {
-            while(directoryContentsThread.getState()!=Thread.State.TERMINATED);
-        }
-        directoryContentsThread=new DirectoryContentsLoaderThread(uri,fileItemsArray);
-        directoryContentsThread.shouldNotUpdateUI();
-        directoryContentsThread.start();
-        return fileItemsArray;
-    }
-
     private List<FileItem> loadDirectoryContents(URI uri,boolean updateUI)
     {
+        if(isPerformingDirectoryContentsLoading())
+        {
+            showErrorDialog("A folder opening operation is in progress, try again when ready");
+            return fileItemArray;
+        }
         currentDir=uri;
         AppState.instance().setCurrentDir(currentDir);
         List<FileItem> fileItemsArray=new CopyOnWriteArrayList<>();
-        if(directoryContentsThread!=null)
-        {
-            while(directoryContentsThread.getState()!=Thread.State.TERMINATED);
-        }
         directoryContentsThread=new DirectoryContentsLoaderThread(uri,fileItemsArray);
         if(updateUI)
         {
@@ -501,9 +485,17 @@ public class FileManagerActivity extends AppCompatActivity {
         fileItemArray=loadDirectoryContents(uri,true);
     }
 
+    public void loadCurrentDirectoryContentsAndUpdateUI()
+    {
+        fileItemArray=loadDirectoryContents(currentDir,true);
+    }
+
     public void updateDirectoryContentsUI()
     {
-        toolbar.setSubtitle(currentDir.getPath());
+        if(!isPerformingFileOperation())
+        {
+            toolbar.setSubtitle(currentDir.getPath());
+        }
         fileItemAdapter=new FileRecyclerViewAdapter(fileItemArray,this);
         fileRecyclerView.setAdapter(fileItemAdapter);
     }
@@ -522,9 +514,10 @@ public class FileManagerActivity extends AppCompatActivity {
 
     private void performFileOperation()
     {
-        if(fileOperationThread!=null)
+        if(isPerformingFileOperation())
         {
-            while(fileOperationThread.getState()!=Thread.State.TERMINATED);
+            showErrorDialog("A file operation is in progress, try again when ready");
+            return;
         }
         fileOperationThread=new FileOperationThread(filesSelected);
         fileOperationThread.setFileOperation(fileOperation);
@@ -628,5 +621,29 @@ public class FileManagerActivity extends AppCompatActivity {
     public void showProgressMessage(String message)
     {
         toolbar.setSubtitle(message);
+    }
+
+    public boolean isPerformingDirectoryContentsLoading()
+    {
+        if(directoryContentsThread!=null)
+        {
+            if(directoryContentsThread.getState() != Thread.State.TERMINATED)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isPerformingFileOperation()
+    {
+        if(fileOperationThread!=null)
+        {
+            if(fileOperationThread.getState() != Thread.State.TERMINATED)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

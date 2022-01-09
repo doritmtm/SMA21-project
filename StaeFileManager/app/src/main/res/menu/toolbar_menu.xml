@@ -9,6 +9,10 @@
         app:showAsAction="ifRoom" />
     <group android:id="@+id/mainGroup">
         <item
+            android:id="@+id/toolbarSelectAllMain"
+            android:title="Select All"
+            app:showAsAction="never" />
+        <item
             android:id="@+id/toolbarNewFile"
             android:title="New File" />
         <item
@@ -35,7 +39,7 @@
         android:id="@+id/selectionGroup"
         android:visible="false">
         <item
-            android:id="@+id/toolbarSelectAll"
+            android:id="@+id/toolbarSelectAllSelection"
             android:title="Select All"
             app:showAsAction="never" />
         <item

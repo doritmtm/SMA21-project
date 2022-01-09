@@ -56,7 +56,7 @@ public class DirectoryContentsLoaderThread extends Thread {
 
                     for (File f : files)
                     {
-                        fileItem = createFileItem(f);
+                        fileItem = new FileItem(f,detailMode);
                         fileItemsArray.add(fileItem);
                     }
                 }
@@ -83,52 +83,6 @@ public class DirectoryContentsLoaderThread extends Thread {
         }
     }
 
-    private FileItem createFileItem(File file)
-    {
-        FileItem fileItem=new FileItem(file.getName());
-        fileItem.setUri(file.toURI());
-
-
-        if(file.getParentFile()!=null)
-        {
-            fileItem.setParentURI(file.getParentFile().toURI());
-        }
-        if(file.isDirectory())
-        {
-            fileItem.setIcon(AppCompatResources.getDrawable(AppState.instance().getFileManagerActivity(), R.drawable.folder));
-            switch(detailMode)
-            {
-                case DATE:
-                    Date date=new Date(file.lastModified());
-                    DateFormat dateFormat=new SimpleDateFormat("dd.MM.yyyy HH:mm");
-                    fileItem.setDetail(dateFormat.format(date));
-                    break;
-                default:
-                    fileItem.setDetail("");
-                    break;
-            }
-        }
-        else
-        {
-            fileItem.setIcon(AppCompatResources.getDrawable(AppState.instance().getFileManagerActivity(), R.drawable.file));
-            switch(detailMode)
-            {
-                case SIZE:
-                    fileItem.setDetail(AppState.filesizeDisplayString(file.length()));
-                    break;
-                case DATE:
-                    Date date=new Date(file.lastModified());
-                    DateFormat dateFormat=new SimpleDateFormat("dd.MM.yyyy HH:mm");
-                    fileItem.setDetail(dateFormat.format(date)+"\n"+AppState.filesizeDisplayString(file.length()));
-                    break;
-                default:
-                    fileItem.setDetail("");
-                    break;
-            }
-        }
-        return fileItem;
-    }
-
     private void sortFileItems()
     {
         List<FileItem> tempFileItemArray=new ArrayList<FileItem>();
@@ -137,19 +91,16 @@ public class DirectoryContentsLoaderThread extends Thread {
             switch (sortMode) {
                 case NAME:
                     Collections.sort(tempFileItemArray, (fi1, fi2) -> {
-                        File fi1File, fi2File;
-                        fi1File = new File(fi1.getUri());
-                        fi2File = new File(fi2.getUri());
-                        if (fi1File.isDirectory() && fi2File.isDirectory()) {
+                        if (fi1.isDirectory() && fi2.isDirectory()) {
                             return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
                         }
-                        if (fi1File.isFile() && fi2File.isFile()) {
+                        if (fi1.isFile() && fi2.isFile()) {
                             return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
                         }
-                        if (fi1File.isDirectory() && fi2File.isFile()) {
+                        if (fi1.isDirectory() && fi2.isFile()) {
                             return -1;
                         }
-                        if (fi1File.isFile() && fi2File.isDirectory()) {
+                        if (fi1.isFile() && fi2.isDirectory()) {
                             return 1;
                         }
                         return 0;
@@ -157,35 +108,32 @@ public class DirectoryContentsLoaderThread extends Thread {
                     break;
                 case DATE:
                     Collections.sort(tempFileItemArray, (fi1, fi2) -> {
-                        File fi1File, fi2File;
-                        fi1File = new File(fi1.getUri());
-                        fi2File = new File(fi2.getUri());
-                        if (fi1File.isDirectory() && fi2File.isDirectory()) {
-                            if (fi1File.lastModified() - fi2File.lastModified() < 0) {
+                        if (fi1.isDirectory() && fi2.isDirectory()) {
+                            if (fi1.getLastModified() - fi2.getLastModified() < 0) {
                                 return 1;
                             }
-                            if (fi1File.lastModified() - fi2File.lastModified() == 0) {
+                            if (fi1.getLastModified() - fi2.getLastModified() == 0) {
                                 return 0;
                             }
-                            if (fi1File.lastModified() - fi2File.lastModified() > 0) {
+                            if (fi1.getLastModified() - fi2.getLastModified() > 0) {
                                 return -1;
                             }
                         }
-                        if (fi1File.isFile() && fi2File.isFile()) {
-                            if (fi1File.lastModified() - fi2File.lastModified() < 0) {
+                        if (fi1.isFile() && fi2.isFile()) {
+                            if (fi1.getLastModified() - fi2.getLastModified() < 0) {
                                 return 1;
                             }
-                            if (fi1File.lastModified() - fi2File.lastModified() == 0) {
+                            if (fi1.getLastModified() - fi2.getLastModified() == 0) {
                                 return 0;
                             }
-                            if (fi1File.lastModified() - fi2File.lastModified() > 0) {
+                            if (fi1.getLastModified() - fi2.getLastModified() > 0) {
                                 return -1;
                             }
                         }
-                        if (fi1File.isDirectory() && fi2File.isFile()) {
+                        if (fi1.isDirectory() && fi2.isFile()) {
                             return -1;
                         }
-                        if (fi1File.isFile() && fi2File.isDirectory()) {
+                        if (fi1.isFile() && fi2.isDirectory()) {
                             return 1;
                         }
                         return 0;
@@ -193,27 +141,24 @@ public class DirectoryContentsLoaderThread extends Thread {
                     break;
                 case SIZE:
                     Collections.sort(tempFileItemArray, (fi1, fi2) -> {
-                        File fi1File, fi2File;
-                        fi1File = new File(fi1.getUri());
-                        fi2File = new File(fi2.getUri());
-                        if (fi1File.isDirectory() && fi2File.isDirectory()) {
+                        if (fi1.isDirectory() && fi2.isDirectory()) {
                             return fi1.getName().toLowerCase().compareTo(fi2.getName().toLowerCase());
                         }
-                        if (fi1File.isFile() && fi2File.isFile()) {
-                            if (fi1File.length() - fi2File.length() < 0) {
+                        if (fi1.isFile() && fi2.isFile()) {
+                            if (fi1.getLength() - fi2.getLength() < 0) {
                                 return 1;
                             }
-                            if (fi1File.length() - fi2File.length() == 0) {
+                            if (fi1.getLength() - fi2.getLength() == 0) {
                                 return 0;
                             }
-                            if (fi1File.length() - fi2File.length() > 0) {
+                            if (fi1.getLength() - fi2.getLength() > 0) {
                                 return -1;
                             }
                         }
-                        if (fi1File.isDirectory() && fi2File.isFile()) {
+                        if (fi1.isDirectory() && fi2.isFile()) {
                             return -1;
                         }
-                        if (fi1File.isFile() && fi2File.isDirectory()) {
+                        if (fi1.isFile() && fi2.isDirectory()) {
                             return 1;
                         }
                         return 0;
